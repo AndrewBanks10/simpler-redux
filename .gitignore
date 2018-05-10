@@ -1,5 +1,5 @@
-./.vscode/chrome/**
-./devdll/**
-./node_modules/**
-./temp/**
+.vscode/chrome/**
+devdll/**
+node_modules/**
+temp/**
 package-lock.json
