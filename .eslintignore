@@ -1,0 +1,13 @@
+devdll/**
+dist/**
+lib/**
+temp/**
+src/**/*.inject*
+src/**/*.scss
+src/**/*.sass
+src/**/*.less
+src/**/*.css
+src/assets/**
+node_modules/**
+.vscode/chrome/**
+dllbundle.js

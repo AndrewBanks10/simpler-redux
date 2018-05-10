@@ -1,0 +1,14 @@
+./vscode/**
+./devdll/**
+./devtools/devServer.js
+./devtools/index.ejs
+./node_modules/**
+./temp/**
+./test.dev/**
+.eslintignore
+.eslintrc.js
+index.dev.ejs
+jsconfig.json
+package-lock.json
+.gitignore
+.npmignore
