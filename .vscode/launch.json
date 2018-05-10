@@ -1,0 +1,80 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+	    {
+            "name": "Debug",
+            "type": "chrome",
+            "request": "launch",
+            "webRoot": "${workspaceRoot}",
+            "url": "http://localhost:3000/index.html", 
+            "userDataDir": "${workspaceRoot}/.vscode/chrome",
+            "sourceMaps": true,
+            "smartStep": true,
+            "preLaunchTask": "Development",
+            "internalConsoleOptions": "openOnSessionStart",
+            "skipFiles": [
+                "node_modules/**"
+            ],
+            "sourceMapPathOverrides": {
+                "webpack:///*": "${webRoot}/*"
+            }
+        },
+        {
+            "name": "Run Mocha Tests",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+            "stopOnEntry": false,
+            "sourceMaps": true,
+            "smartStep": true,
+            "args": [
+                "--no-timeouts",
+                "--colors", 
+                "--require", 
+                "babel-register", 
+                "./test/test.js"
+            ],
+            "cwd": "${workspaceRoot}",
+            "runtimeExecutable": null,
+            "env": { "NODE_ENV": "testing"}
+        },
+        {
+            "name": "Run Production Tests",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+            "stopOnEntry": false,
+            "sourceMaps": true,
+            "smartStep": true,
+            "args": [
+                "--no-timeouts",
+                "--colors", 
+                "--require", 
+                "babel-register", 
+                "./test/test.js"
+            ],
+            "cwd": "${workspaceRoot}",
+            "runtimeExecutable": null,
+            "env": { "NODE_ENV": "production"}
+        },
+        {
+            "name": "Debug Run Mocha Tests",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+            "stopOnEntry": false,
+            "sourceMaps": true,
+            "smartStep": true,
+            "args": [
+                "--no-timeouts",
+                "--colors", 
+                "--require", 
+                "babel-register", 
+                "./test/test.js"
+            ],
+            "cwd": "${workspaceRoot}",
+            "runtimeExecutable": null,
+            "env": { "NODE_ENV": "debugTesting"}
+        },
+	]
+}

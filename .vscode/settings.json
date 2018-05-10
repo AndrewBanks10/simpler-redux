@@ -1,0 +1,115 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+	"editor.formatOnType": true,
+	"eslint.enable": true,
+	"files.associations": {
+		"**/src/**/*.js": "javascriptreact",
+		"**/node_modules/**/*.js": "javascript",
+		".babelrc": "json",
+		".eslintignore": "gitignore"
+	},
+	"files.watcherExclude": {
+		".vscode/chrome/**": true
+	},
+	"html.format.extraLiners": "!",
+	"html.format.indentInnerHtml": true,
+	"json.schemas": [
+		{
+			"fileMatch": [
+				"/package.json"
+			],
+			"schema": {
+				"type": "object",
+				"properties": {
+					"config": {
+						"properties": {
+							"port": {
+								"type": "number",
+								"description": "The port of the webpack-dev-server",
+								"default": 3000
+							},
+							"host": {
+								"type": "string",
+								"description": "The hostname or ip of the webpack-dev-server",
+								"default": "localhost"
+							},
+							"ghooks": {
+								"type": "object",
+								"description": "Git hook configurations",
+								"properties": {
+									"applypatch-msg": {
+										"type": "string"
+									},
+									"pre-applypatch": {
+										"type": "string"
+									},
+									"post-applypatch": {
+										"type": "string"
+									},
+									"pre-commit": {
+										"type": "string"
+									},
+									"prepare-commit-msg": {
+										"type": "string"
+									},
+									"commit-msg": {
+										"type": "string"
+									},
+									"post-commit": {
+										"type": "string"
+									},
+									"pre-rebase": {
+										"type": "string"
+									},
+									"post-checkout": {
+										"type": "string"
+									},
+									"post-merge": {
+										"type": "string"
+									},
+									"pre-push": {
+										"type": "string"
+									},
+									"pre-receive": {
+										"type": "string"
+									},
+									"update": {
+										"type": "string"
+									},
+									"post-receive": {
+										"type": "string"
+									},
+									"post-update": {
+										"type": "string"
+									},
+									"pre-auto-gc": {
+										"type": "string"
+									},
+									"post-rewrite": {
+										"type": "string"
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	],
+	"search.exclude": {
+		"dist/**": true,
+		"lib/**": true,
+		"temp/**": true,
+		"node_modules": true,
+		".git": true,
+		".vscode/chrome/**": true,
+		"devdll/**": true
+	},
+    "files.exclude": {
+        "**/.git": true,
+        "**/.DS_Store": true,
+        "**/node_modules": true,
+		".vscode/chrome/**": true
+    },
+	"typescript.check.tscVersion": false
+}
