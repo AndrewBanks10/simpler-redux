@@ -1,3 +1,7 @@
+/*
+  Written by Andrew Banks.
+*/
+
 // 22 lines without blanks, comments and argument checks.
 let reduxStore
 

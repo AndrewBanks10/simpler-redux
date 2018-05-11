@@ -21,6 +21,14 @@
 4. `generalReducer(reducerKeyName, initialState)` - Returns a reducer that manages the redux state transitions at `reduxState[reducerKeyName]`. Use this in your root reducer object.
     -   `reducerKeyName` - Redux reducer key name. All state transitions will occur at `reduxState[reducerKeyName]`.
     -   `initialState` - This object will be merged at `reduxState[reducerKeyName]` for the initial state.
+
+### Similarity to react's component state management
+-   State transition
+    -   React - `this.setState(objToMerge)`.  React does not guarantee that the state changes are applied immediately.
+    - simpler-redux - `setState(reducerKey, objToMerge, [type])`. This is an immediate command.
+-   Get state
+    -   React - `let x = this.state.x`
+    -   simpler-redux - `let x = getState(reducerKey)`
 ### Usage
 First, perform the following where you configure your redux store.
 ```javascript
@@ -47,7 +55,7 @@ export const initialState = {
 export const selectSubreddit = subreddit =>
   setState(reducerKey, {subreddit}, 'selectSubreddit')
 ```
-Note above, to transition the redux state at reduxState['AsyncApp'] so that the key subreddit is changed in reduxState['AsyncApp'], call selectSubreddit as above. Note that the "type" is 'selectSubreddit'. So your redux logging function will record a type of 'selectSubreddit' which makes it easier to identify exactly where the state was changed.
+Note above, to transition the redux state at reduxState['AsyncApp'] so that the key subreddit is changed in reduxState['AsyncApp'], call selectSubreddit as above. Note that the "type" is 'selectSubreddit'. So your redux logging function will record a type of 'selectSubreddit' which makes it easier to directly identify exactly where the state was changed.
 The code `setState(reducerKey, {subreddit}, 'selectSubreddit')` translates first to the following.
 ```javascript
 reduxStore.dispatch({
