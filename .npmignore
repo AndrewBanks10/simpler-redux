@@ -12,3 +12,4 @@ jsconfig.json
 package-lock.json
 .gitignore
 .npmignore
+.gitattributes
