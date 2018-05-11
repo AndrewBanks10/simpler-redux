@@ -3,3 +3,4 @@ devdll/**
 node_modules/**
 temp/**
 package-lock.json
+index.dev.ejs
