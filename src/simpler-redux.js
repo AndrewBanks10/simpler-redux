@@ -2,13 +2,16 @@
   Written by Andrew Banks.
 */
 
-// 22 lines without blanks, comments and argument checks.
+// 25 lines without blanks, comments and argument checks.
 let reduxStore
 
 const register = store =>
   (reduxStore = store)
 
 const setState = (reducerKey, objToMerge, type) => {
+  if (typeof type === 'undefined') {
+    type = reducerKey
+  }
   if (process.env.NODE_ENV !== 'production') {
     if (typeof reduxStore === 'undefined') {
       throw new Error('setReduxStore must be called before calling setState.')
@@ -18,9 +21,6 @@ const setState = (reducerKey, objToMerge, type) => {
     }
     if (typeof objToMerge === 'undefined') {
       throw new Error('setState: The second argument cannot be undefined.')
-    }
-    if (typeof type === 'undefined') {
-      type = reducerKey
     }
     if (typeof type !== 'string') {
       throw new Error('setState: The third argument must be a string.')
