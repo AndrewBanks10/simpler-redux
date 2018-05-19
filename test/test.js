@@ -6,16 +6,16 @@ import { createStore, combineReducers } from 'redux'
 const assert = require('assert')
 const isEqual = require('lodash/isEqual')
 
-let simpleRedux
+let simplerRedux
 // Use the source when testing with the debugger. This is "Debug Mocha Tests" entry.
 if (process.env.NODE_ENV === 'debugTesting') {
-  simpleRedux = require('../src/simpler-redux.js')
+  simplerRedux = require('../src/simpler-redux.js')
   // Test the lib version. "Run Mocha Tests" entry.
 } else {
-  simpleRedux = require('../lib/simpler-redux.js')
+  simplerRedux = require('../lib/simpler-redux.js')
 }
 
-const { register, generalReducer, setState, getState } = simpleRedux
+const { registerSimplerRedux, generalReducer } = simplerRedux
 
 let reducersObject = {
 }
@@ -37,9 +37,7 @@ for (let i = 0; i < numModules; ++i) {
   reducersObject[moduleName] = generalReducer(moduleName, initialState)
 }
 
-const reduxStore = createStore(combineReducers(reducersObject))
-
-register(reduxStore)
+const reduxStore = registerSimplerRedux(createStore(combineReducers(reducersObject)))
 
 describe('Verify setup.', function () {
   it(`The reduxStore is valid.`, function () {
@@ -62,7 +60,7 @@ describe('Test initial getState.', function () {
   it(`Each getState on the moduleName should match initialState.`, function () {
     for (let i = 0; i < numModules; ++i) {
       let moduleName = `${baseModuleName}${i}`
-      assert(isEqual(getState(moduleName), initialState))
+      assert(isEqual(reduxStore.getRState(moduleName), initialState))
     }
   })
 })
@@ -76,18 +74,18 @@ describe(`Test setState/getState with the number of state transitions on each ke
     initialState.intVal = [`test${i}`]
     for (let i = 0; i < numModules; ++i) {
       let moduleName = `${baseModuleName}${i}`
-      setState(moduleName, initialState)
+      reduxStore.setRState(moduleName, initialState)
     }
     it(`Verify setState performed a state transition (pointer change) on each key state transition=${i}.`, function () {
       for (let i = 0; i < numModules; ++i) {
         let moduleName = `${baseModuleName}${i}`
-        assert(getState(moduleName) !== initialState)
+        assert(reduxStore.getRState(moduleName) !== initialState)
       }
     })
     it(`Verify getState is equal to the new state transition for each key state transition=${i}.`, function () {
       for (let i = 0; i < numModules; ++i) {
         let moduleName = `${baseModuleName}${i}`
-        assert(isEqual(getState(moduleName), initialState))
+        assert(isEqual(reduxStore.getRState(moduleName), initialState))
       }
     })
   }

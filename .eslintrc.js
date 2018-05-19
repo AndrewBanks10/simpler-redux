@@ -3,7 +3,8 @@ const path = require('path')
 module.exports = {
 	"parser": "babel-eslint",
 	"plugins": [
-		"babel"
+		"babel",
+		"react"
 	],
 	"settings": {
 		"import/resolver": {
@@ -20,7 +21,8 @@ module.exports = {
     },
 
   "extends": [
-		"standard", 
+		"standard",
+		"standard-react",
 		"plugin:import/warnings",
 		"plugin:import/errors"
 	],
@@ -32,5 +34,9 @@ module.exports = {
 		"es6": true,
 		"worker": true,
 		"mocha": true
+	},
+	"rules": {
+		"react/prop-types": 0,
+		"react/jsx-boolean-value": 0
 	}
 }

@@ -1,5 +1,5 @@
 import { createStore, combineReducers } from 'redux'
-import { register, generalReducer, setState, getState } from '../src/simpler-redux.js'
+import { registerSimplerRedux, generalReducer } from '../src/simpler-redux.js'
 
 let moduleName = 'testing'
 let initialState = {
@@ -9,12 +9,10 @@ let reducersObject = {
   [moduleName]: generalReducer(moduleName, initialState)
 }
 
-const reduxStore = createStore(combineReducers(reducersObject))
+const reduxStore = registerSimplerRedux(createStore(combineReducers(reducersObject)))
 
-register(reduxStore)
+reduxStore.setRState(moduleName, { testbool: true })
 
-setState(moduleName, { testbool: true })
-
-const st = getState(moduleName)
+const st = reduxStore.getRState(moduleName)
 
 console.info(st)

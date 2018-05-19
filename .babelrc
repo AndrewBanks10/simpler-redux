@@ -1,7 +1,25 @@
 {
     "presets": [
-        "env"
+        "env",
+        "react"
     ],
+    "plugins": [        
+        "transform-object-rest-spread",
+        "react-hot-loader/babel",
+        "transform-react-jsx"
+    ],
+    "env": {
+        "production": {
+            "presets": [
+                "react-optimize"
+            ]
+        },
+        "development": {
+            "plugins": [
+                "transform-react-jsx-source"
+            ]
+        }
+    },
     "sourceMaps": true,
     "retainLines": true
 }

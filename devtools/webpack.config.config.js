@@ -15,11 +15,15 @@ const buildEntryJs = 'simpler-redux.js'
 // The key item is the library name and the second is how you will refer to it in
 // your code.
 const externalsLibMin = {
-  'redux': 'Redux'
+  'redux': 'Redux',
+  'react': 'React'
 }
 
 const externalsLibLib = {
-  'redux': 'redux'
+  'redux': 'redux',
+  'react': 'react',
+  'react-redux': 'react-redux',
+  'prop-types': 'prop-types'
 }
 
 /*
@@ -30,6 +34,9 @@ const externalsLibLib = {
 */
 const dllModules = [
   'redux',
+  'react',
+  'react-dom',
+  'react-redux',
   'object-assign'
 ]
 
@@ -68,7 +75,7 @@ const config = {
     ]
   },
   node_modulesPath: 'node_modules',
-  resolveExtensions: ['.js']
+  resolveExtensions: ['.js', '.jsx']
 }
 
 config.basePath = process.cwd()
