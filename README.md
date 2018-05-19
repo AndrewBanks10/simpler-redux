@@ -40,13 +40,13 @@ Container code located at `src/Containers/Counter.js
 ```javascript
 import {connectWithStore} from 'simpler-redux'
 import Counter from '../Views/Counter'
-import { selectors, setters } from '../StateManagement/Counter'
+import { selectors, serviceFunctions } from '../StateManagement/Counter'
 
 const mapStateToProps = state =>
   ({counter: selectors.getCounter(state)})
 
 const mapDispatchToProps = (dispatch, ownProps) =>
-  ({increment: () => setters.increment(ownProps.store)})
+  ({increment: () => serviceFunctions.increment(ownProps.store)})
 
 export default connectWithStore(
   Counter,
@@ -68,9 +68,9 @@ export const selectors = {
   getCounter: state =>
     state[reducerKey][counterKey]
 }
-// Setters always take in the simpler-redux enhanced redux store as would be
+// serviceFunctions always take in the simpler-redux enhanced redux store as would be
 // available in mapDispatchToProps at the second argument ownProps.store.
-export const setters = {
+export const serviceFunctions = {
   increment: store =>
     store.setRState(reducerKey, { [counterKey]: store.getRState(reducerKey)[counterKey] + 1 }, 'increment')
 }
@@ -166,7 +166,7 @@ export const selectors = {
     (state[reducerKey][defaultKey])
 }
 
-export const setters = {
+export const serviceFunctions = {
   increment: (store, reducerKey) =>
     store.setRState(reducerKey, { [defaultKey]: store.getRState(reducerKey)[defaultKey] + 1 }, 'increment')
 }
@@ -178,7 +178,7 @@ Next is the code that consumes the above.
 import {
   getInitialState as commonGetinitialState,
   selectors as commonSelectors,
-  setters as commonSetters
+  serviceFunctions as commonServiceFunctions
 } from './Common/Counter'
 
 export const reducerKey = 'counter.2'
@@ -195,9 +195,9 @@ export const selectors = {
 }
 
 // Make calls to the sharable code to transition the current state.
-export const setters = {
+export const serviceFunctions = {
   increment: store =>
-    commonSetters.increment(store, reducerKey)
+    commonServiceFunctions.increment(store, reducerKey)
 }
 ```
 
@@ -205,15 +205,15 @@ Here are the advantages of the above implementation.
 1. No additional reducers are required which would degrade performance.
 2. The consumer does not participate in the state management at the defaultKey thereby satisfying a separation of concerns.
 3. Your organization can collect this sharable state management code into libraries so that you do not have to repeat yourself in various projects.
-4. The sharable code and the consumer code share the same paradigm (initialState, selectors, setters). Therefore, the code is easy to understand.
+4. The sharable code and the consumer code share the same paradigm (initialState, selectors, serviceFunctions). Therefore, the code is easy to understand.
 5. This technique is simpler and easier to maintain as compared to the "redux way".
 
 So with simpler-redux state management you only need to think about three simple concepts:
 1. initialState to initialize the state at the reducer key.
 2. selectors to get slices of the current state at the reducer key.
-3. setters to state transition slices of the current state at the reducer key.
+3. serviceFunctions to state transition slices of the current state at the reducer key or call asynchronous functions.
 
 Note that simpler-redux also converts redux into an MVC implementation for the react UI. As most will know, MVC is the correct way to implement user interface code. In the simpler-redux case, MVC is as follows.
 1. The view is the stateless react component located in the Views directory.
-2. The model is the state management code located in the StateManagement directory which is responsible for updating and getting state under a particular reducerKey.
+2. The model is the state management code located in the StateManagement directory which is responsible for updating and getting state under a particular reducerKey. It it also responsible for performing asynchronous functions.
 3. The controller is located in the Containers directory and is responsible for providing the connections between the view and model.

@@ -23,7 +23,7 @@ export const selectors = {
     state[reducerKey][counter4Key]
 }
 
-export const setters = {
+export const serviceFunctions = {
   increment1: store =>
     store.setRState(reducerKey, { [counter1Key]: store.getRState(reducerKey)[counter1Key] + 1 }, 'increment1'),
   increment2: store =>

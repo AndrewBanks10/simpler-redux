@@ -1,6 +1,6 @@
 import {connectWithStore} from '../../src/simpler-redux'
 import Counter from '../Views/Counter'
-import { setters, selectors } from '../State Management/Counter'
+import { serviceFunctions, selectors } from '../State Management/Counter'
 
 const mapStateToProps = state =>
   ({
@@ -12,10 +12,10 @@ const mapStateToProps = state =>
 
 const mapDispatchToProps = (dispatch, ownProps) =>
   ({
-    increment1: () => setters.increment1(ownProps.store),
-    increment2: () => setters.increment2(ownProps.store),
-    increment3: () => setters.increment3(ownProps.store),
-    increment4: () => setters.increment4(ownProps.store)
+    increment1: () => serviceFunctions.increment1(ownProps.store),
+    increment2: () => serviceFunctions.increment2(ownProps.store),
+    increment3: () => serviceFunctions.increment3(ownProps.store),
+    increment4: () => serviceFunctions.increment4(ownProps.store)
   })
 
 export default connectWithStore(
