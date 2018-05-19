@@ -1,4 +1,4 @@
-vscode/**
+.vscode/**
 devdll/**
 devtools/devServer.js
 devtools/index.ejs

@@ -9,7 +9,7 @@
 - Simple to integrate with your existing react/redux project.
 
 ### Installation
-`npm install --save simpler-redux`
+`npm install simpler-redux`
 
 ### Basics
 1. `registerSimplerRedux(reduxStore)` - Wrap this around your redux `createStore` call. It returns an enhanced reduxStore object with the redux store as its prototype. 
