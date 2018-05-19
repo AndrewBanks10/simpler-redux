@@ -212,3 +212,8 @@ So with simpler-redux state management you only need to think about three simple
 1. initialState to initialize the state at the reducer key.
 2. selectors to get slices of the current state at the reducer key.
 3. setters to state transition slices of the current state at the reducer key.
+
+Note that simpler-redux also converts redux into an MVC implementation for the react UI. As most will know, MVC is the correct way to implement user interface code. In the simpler-redux case, MVC is as follows.
+1. The view is the stateless react component located in the Views directory.
+2. The model is the state management code located in the StateManagement directory which is responsible for updating and getting state under a particular reducerKey.
+3. The controller is located in the Containers directory and is responsible for providing the connections between the view and model.
