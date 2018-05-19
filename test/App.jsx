@@ -3,9 +3,7 @@ import { Provider } from 'react-redux'
 import store from './reduxstore'
 import Counter from './Containers/Counter'
 
-const App = () =>
+export default () =>
   <Provider store={store}>
     <Counter />
   </Provider>
-
-export default App
