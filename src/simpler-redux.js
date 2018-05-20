@@ -58,7 +58,7 @@ export const generalReducer = (reducerKey, initialState) => {
 }
 
 export const connectWithStore = (
-  WrappedComponent,
+  ComponentToWrap,
   mapStateToProps,
   mapDispatchToProps,
   mergeProps,
@@ -69,7 +69,7 @@ export const connectWithStore = (
     mapDispatchToProps,
     mergeProps,
     options
-  )(WrappedComponent)
+  )(ComponentToWrap)
 
   class HOC extends React.Component {
     render () {
@@ -88,9 +88,19 @@ export const connectWithStore = (
 }
 
 export const getStateFunction = reducerKey =>
-  (state, value) =>
-    state[reducerKey][value]
+  (state, key) =>
+    state[reducerKey][key]
 
 export const setStateFunction = reducerKey =>
-  (store, mergeState, key) =>
-    store.setRState(reducerKey, mergeState, key)
+  (store, mergeState, type) =>
+    store.setRState(reducerKey, mergeState, type)
+
+export const allServiceFunctionsToProps = serviceFunctions =>
+  (dispatch, ownProps) =>
+    Object.keys(serviceFunctions).reduce((obj, e) => {
+      obj[e] = (...args) => serviceFunctions[e](ownProps.store, ...args)
+      return obj
+    }, {})
+
+export const allStateToProps = reducerKey =>
+  state => state[reducerKey]

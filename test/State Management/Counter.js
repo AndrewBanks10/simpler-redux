@@ -1,4 +1,8 @@
+import { getStateFunction, setStateFunction } from '../../test/test'
 export const reducerKey = 'counter.4'
+
+const getState = getStateFunction(reducerKey)
+const setState = setStateFunction(reducerKey)
 
 const counter1Key = 'counter1'
 const counter2Key = 'counter2'
@@ -14,22 +18,22 @@ export const initialState = {
 
 export const selectors = {
   getCounter1: state =>
-    state[reducerKey][counter1Key],
+    getState(state, counter1Key),
   getCounter2: state =>
-    state[reducerKey][counter2Key],
+    getState(state, counter2Key),
   getCounter3: state =>
-    state[reducerKey][counter3Key],
+    getState(state, counter3Key),
   getCounter4: state =>
-    state[reducerKey][counter4Key]
+    getState(state, counter4Key)
 }
 
 export const serviceFunctions = {
   increment1: store =>
-    store.setRState(reducerKey, { [counter1Key]: store.getRState(reducerKey)[counter1Key] + 1 }, 'increment1'),
+    setState(store, { [counter1Key]: store.getRState(reducerKey)[counter1Key] + 1 }, 'increment1'),
   increment2: store =>
-    store.setRState(reducerKey, { [counter2Key]: store.getRState(reducerKey)[counter2Key] + 1 }, 'increment2'),
+    setState(store, { [counter2Key]: store.getRState(reducerKey)[counter2Key] + 1 }, 'increment2'),
   increment3: store =>
-    store.setRState(reducerKey, { [counter3Key]: store.getRState(reducerKey)[counter3Key] + 1 }, 'increment3'),
+    setState(store, { [counter3Key]: store.getRState(reducerKey)[counter3Key] + 1 }, 'increment3'),
   increment4: store =>
-    store.setRState(reducerKey, { [counter4Key]: store.getRState(reducerKey)[counter4Key] + 1 }, 'increment4')
+    setState(store, { [counter4Key]: store.getRState(reducerKey)[counter4Key] + 1 }, 'increment4')
 }
