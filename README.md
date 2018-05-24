@@ -7,6 +7,7 @@
 - Eliminates the need for action constants.
 - Simplifies your state management code.
 - Simple to integrate with your existing react/redux project.
+- Reduces the side effects of the "redux way".
 
 ### Installation
 `npm install simpler-redux`
@@ -40,11 +41,11 @@
     -   simpler-redux - `let x = reduxStore.getRState(reducerKey)`
 
 ### Sample usage
-Container code located at `src/Containers/Counter.js`
+Container code located at `src/Counter/controller.js`
 ```javascript
 import {connectWithStore } from 'simpler-redux'
-import Counter from '../Views/Counter'
-import { selectors, serviceFunctions } from '../StateManagement/Counter'
+import Counter from './views'
+import { selectors, serviceFunctions } from './model'
 
 const mapStateToProps = state =>
   ({counter: selectors.getCounter(state)})
@@ -58,12 +59,15 @@ export default connectWithStore(
   mapDispatchToProps
 )
 ```
-State management code located at `src/StateManagement/counter.js
+Note that the above controller code does not contain any intelligence. Its purpose is simply to connect the model code to the view code without knowing anything about the details of either's implementions. Therefore, this technique removes any side effects of changing the model code or underlying state.
+The model code located at `src/Counter/model.js. This code manages the state for the reducerKey. It also is responsible for performing asynchronous operations and managing the state through those transactions. So, the model code contains the state management and the business logic.
 ```javascript
+import { generalReducer } from 'simpler-redux'
+
 export const reducerKey = 'counter.1'
 const counterKey = 'counter'
 
-export const initialState = {
+const initialState = {
   [counterKey]: 0
 }
 // Selectors always take in the entire redux state object as would be available in
@@ -79,8 +83,10 @@ export const serviceFunctions = {
     store.setRState(reducerKey, { [counterKey]: store.getRState(reducerKey)[counterKey] + 1 }, 'increment')
 }
 
+// Simpler-redux builds the reducer for you.
+export const reducer = generalReducer(reducerKey, initialState)
 ```
-View code located at src/Views/counter.js
+The View code is located at src/Counter/view.js. It should only display information received in the props and call functions supplied by the props. This code is responsible for display only. Any functional behavior should be supplied by the model to the control and then into the props of the view where is is simply called by the view.
 ```javascript
 import React from 'react'
 export default ({counter, increment}) =>
@@ -89,16 +95,22 @@ export default ({counter, increment}) =>
     <button onClick={increment}>Increment</button>
   </div>
 ```
-Reducer code located at `src/reducers.js`. Simpler-redux builds the reducer for you.
+The src/Counter/index.js code exports features to the outside.
 ```javascript
-import { generalReducer } from 'simpler-redux'
-import { initialState as counterInitialState, reducerKey as counterReducerKey } from './StateManagement/Counter'
+import Container from './controller'
+import { reducerKey, reducer } from './model'
+export default Container
+export { reducerKey, reducer }
+```
+The reducer code located at `src/reducers.js`.
+```javascript
+import { reducerKey as counterReducerKey, reducer as counterReducer } from './Counter'
 
 export default {
-  [counterReducerKey]: generalReducer(counterReducerKey, counterInitialState)
+  [counterReducerKey]: counterReducer
 }
 ```
-Redux store code located at `src/reduxstore.js`.
+The redux store code located at `src/reduxstore.js`.
 ```javascript
 import reducersObject from './reducers'
 import { createStore, combineReducers } from 'redux'
@@ -111,7 +123,7 @@ Last, below is the App code located at `src/App.jsx`.
 import React from 'react'
 import { Provider } from 'react-redux'
 import store from './reduxstore'
-import Counter from './Containers/Counter'
+import Counter from './Counter'
 
 export default () =>
   <Provider store={store}>
@@ -120,11 +132,11 @@ export default () =>
 ```
 
 ### Sample usage of allServiceFunctionsToProps and allStateToProps.
-Look above at the code in  `src/Containers/Counter.js`. All state keys are injected into the props of the react component as well as all service functions. So, the code can be more efficiently written as below.
+Look above at the code in  `src/Counter/controller.js`. All state keys are injected into the props of the react component as well as all service functions. So, the code can be more efficiently written as below.
 ```javascript
 import { connectWithStore, allServiceFunctionsToProps, allStateToProps } from 'simpler-redux'
-import Counter from '../Views/Counter'
-import { reducerKey, serviceFunctions } from '../StateManagement/Counter'
+import Counter from './view'
+import { reducerKey, serviceFunctions } from './model'
 
 export default connectWithStore(
   Counter,
@@ -132,7 +144,7 @@ export default connectWithStore(
   allServiceFunctionsToProps(serviceFunctions)
 )
 ```
-In probably almost all cases, you will not need to write a mapDispatchToProps function since you would normally want all service functions provided to the UI. In addition, during incremental programming, one would add service functions one at time and then test their effects. With allServiceFunctionsToProps you only need to be concerned with adding them in one place to the serviceFunctions object instead of two places which reduces the possibility of forgetting to insert them into your mapDispatchToProps function.
+In probably almost all cases, you will not need to write a mapDispatchToProps function since you would normally want all service functions provided to the UI. In addition, during incremental programming, one would add service functions one at time and then test their effects. With allServiceFunctionsToProps you only need to be concerned with adding them in one place to the serviceFunctions object instead of two places which reduces the possibility of forgetting to insert them into your mapDispatchToProps function. So, allServiceFunctionsToProps removes the side effects of adding service functions.
 
 ### Additional Advantages of the simpler-redux library.
 
@@ -171,7 +183,6 @@ In addition, assume you wanted to share reducer logic under redux. The "redux wa
 However, take a look at the simpler-redux way of sharing state management code. Although it is a small example, the below will create sharable increment state management code to demonstrate its effectiveness.
 
 Below is the sharable code.
-
 ```javascript
 let defaultKey = 'counter'
 

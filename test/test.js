@@ -22,8 +22,10 @@ export const {
   generalReducer,
   connectWithStore,
   allServiceFunctionsToProps,
+  allServiceFunctionsToPropsWithStore,
   allStateToProps,
   getStateFunction,
+  stateAccessors,
   setStateFunction } =
 simplerRedux
 

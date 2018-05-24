@@ -1,6 +1,5 @@
-import { generalReducer } from '../lib/simpler-redux'
-import { initialState as counterInitialState, reducerKey as counterReducerKey } from './State Management/Counter'
+import { reducerKey as counterReducerKey, reducer as counterReducer } from './Counter'
 
 export default {
-  [counterReducerKey]: generalReducer(counterReducerKey, counterInitialState)
+  [counterReducerKey]: counterReducer
 }
