@@ -19,7 +19,7 @@ const handleReactAsync = (done, startTime, waitTime, callbackCheck) => {
   update()
 }
 
-const handleReactAsyncStart = (done, waitTime, callbackCheck) => {
+export const handleReactAsyncStart = (done, waitTime, callbackCheck) => {
   intervalID = setInterval(handleReactAsync, 10, done, new Date(), waitTime, callbackCheck)
 }
 
@@ -34,7 +34,13 @@ export const findNodeFunction = (type, id) =>
   n => n.type() === type && n.props().id === id
 
 export const nodeExists = selector => findNode(selector).first().exists()
-export const nodeString = selector => findNode(selector).first().text()
+export const nodeString = selector => {
+  const node = findNode(selector).first()
+  if (node.length === 0) {
+    return ''
+  }
+  return node.text()
+}
 export const nodeValue = selector => findNode(selector).props().value
 export const simulateClick = selector => findNode(selector).first().simulate('click')
 export const simulateInput = (selector, value) => findNode(selector).first().simulate('change', { target: { value } })

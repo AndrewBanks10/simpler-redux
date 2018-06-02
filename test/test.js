@@ -23,6 +23,7 @@ export const {
   connectWithStore,
   allServiceFunctionsToProps,
   allServiceFunctionsToPropsWithStore,
+  connectLifeCycleComponentWithStore,
   allStateToProps,
   getStateFunction,
   stateAccessors,

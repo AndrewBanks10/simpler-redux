@@ -19,7 +19,7 @@ class AddItem extends React.Component {
   }
 }
 
-const AddItemTest = connectWithStore(AddItem, null, null, null, { withRef: true })
+const AddItemTest = connectWithStore({ uiComponent: AddItem, reduxOptions: { withRef: true } })
 
 export default class SimpleReduxJavascript extends React.Component {
   componentDidMount () {
@@ -44,8 +44,6 @@ export default class SimpleReduxJavascript extends React.Component {
         <button id='increment2' onClick={this.props.increment2}>Increment</button>
         <div id='counter3'>Counter: {this.props.counter3}</div>
         <button id='increment3' onClick={this.props.increment3}>Increment</button>
-        <div id='counter4'>Counter: {this.props.counter4}</div>
-        <button id='increment4' onClick={this.props.increment4}>Increment</button>
         <AddItemTest ref={'AddItem'} />
       </div>
     )

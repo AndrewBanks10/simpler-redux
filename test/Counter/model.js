@@ -11,13 +11,11 @@ export const storeIsDefinedCallback = store =>
 const counter1Key = 'counter1'
 const counter2Key = 'counter2'
 const counter3Key = 'counter3'
-const counter4Key = 'counter4'
 
 export const initialState = {
   [counter1Key]: 0,
   [counter2Key]: 0,
-  [counter3Key]: 0,
-  [counter4Key]: 0
+  [counter3Key]: 0
 }
 
 export const selectors = {
@@ -26,9 +24,7 @@ export const selectors = {
   getCounter2: state =>
     getRState(state, counter2Key),
   getCounter3: () =>
-    getState(counter3Key),
-  getCounter4: () =>
-    getState(counter4Key)
+    getState(counter3Key)
 }
 
 export const serviceFunctions = {
@@ -37,9 +33,7 @@ export const serviceFunctions = {
   increment2: store =>
     setRState(store, { [counter2Key]: store.getRState(reducerKey)[counter2Key] + 1 }, 'increment2'),
   increment3: () =>
-    setState({ [counter3Key]: getState()[counter3Key] + 1 }, 'increment3'),
-  increment4: store =>
-    setState({ [counter4Key]: getState()[counter4Key] + 1 }, 'increment4')
+    setState({ [counter3Key]: getState()[counter3Key] + 1 }, 'increment3')
 }
 
 export const reducer = generalReducer(reducerKey, initialState)
