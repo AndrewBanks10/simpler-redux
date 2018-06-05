@@ -12,6 +12,9 @@ describe('View CounterForm', function () {
   it(`increment counter4 - validated.`, function (done) {
     testCauseAndEffectWithHtmlString('#increment4', '#counter4', `Counter: ${i + 1}`, done)
   })
+  it(`increment counter4 - validated 2.`, function (done) {
+    testCauseAndEffectWithHtmlString('#increment4', '#counter4', `Counter: ${2}`, done)
+  })
   it(`increment counter1 - validated.`, function (done) {
     testCauseAndEffectWithHtmlString('#increment1', '#counter1', `Counter: ${i + 1}`, done)
   })

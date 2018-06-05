@@ -1,6 +1,6 @@
 {
   "name": "simpler-redux",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Redux made simple",
   "main": "lib/simpler-redux.js",
   "scripts": {
@@ -23,7 +23,8 @@
   "keywords": [
     "simpler-redux",
     "library",
-    "redux"
+    "redux",
+    "react"
   ],
   "author": {
     "name": "Andrew Banks",

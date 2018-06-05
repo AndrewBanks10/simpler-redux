@@ -4,6 +4,7 @@ devtools/devServer.js
 devtools/index.ejs
 node_modules/**
 temp/**
+docs/**
 test.dev/**
 .eslintignore
 .eslintrc.js
@@ -14,3 +15,4 @@ package-lock.json
 .npmignore
 .gitattributes
 .babelrc
+docs/**

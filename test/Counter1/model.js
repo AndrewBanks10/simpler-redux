@@ -13,7 +13,9 @@ export const initialState = {
 }
 
 export const selectors = {
-  counter: state => state[reducerKey].counter,
+  counter: state => {
+    return state[reducerKey].counter
+  },
   hooksCalled: () => hooksCalled
 }
 

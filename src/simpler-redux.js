@@ -103,8 +103,9 @@ export const allStateToProps = reducerKey =>
 //
 // Builds a mapStateToProps function that returns key/selector pairs
 //
+
 export const allStateToPropsUsingSelectors = selectors =>
-  (state) =>
+  state =>
     Object.keys(selectors).reduce((obj, e) => {
       obj[e] = selectors[e](state)
       return obj
@@ -133,6 +134,8 @@ export const makeSharedModuleKeyName = (key, options) =>
 export const connectWithStore = (
   options
 ) => {
+  options = {...options}
+  let storeIsDefinedCallback = options.storeIsDefinedCallback
   if (options.mapStateToProps === undefined && options.selectors !== undefined) {
     options.mapStateToProps = allStateToPropsUsingSelectors(options.selectors)
   }
@@ -187,9 +190,9 @@ export const connectWithStore = (
     }
     render () {
       // Handles a callback for the consumer to cache and/or use the store.
-      if (typeof options.storeIsDefinedCallback === 'function') {
-        options.storeIsDefinedCallback(this.context.store)
-        options.storeIsDefinedCallback = null
+      if (storeIsDefinedCallback) {
+        storeIsDefinedCallback(this.context.store)
+        storeIsDefinedCallback = null
       }
       // Add the store to the props of the redux connected component so that it can be referenced
       // in mapDispatchToProps with ownProps.
@@ -215,6 +218,7 @@ export const connectWithStore = (
 class ReactLifeCycleComponent extends React.Component {
   constructor (props) {
     super(props)
+    this.runFunction = this.runFunction.bind(this)
     this.runFunction(this.props.onConstructor)
   }
   runFunction (func, args = []) {
