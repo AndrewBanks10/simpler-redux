@@ -9,8 +9,8 @@ const isEqual = require('lodash/isEqual')
 let simplerRedux
 // Use the source when testing with the debugger. This is "Debug Mocha Tests" entry.
 if (process.env.NODE_ENV === 'debugTesting') {
-  console.log('Testing ../src/simpler-redux.js.')
-  simplerRedux = require('../src/simpler-redux.js')
+  console.log('Testing ../src/index.js.')
+  simplerRedux = require('../src/index.js')
   // Test the lib version. "Run Mocha Tests" entry.
 } else {
   console.log('Testing ../lib/simpler-redux.js.')
@@ -27,8 +27,8 @@ export const {
   allStateToProps,
   getStateFunction,
   stateAccessors,
-  setStateFunction } =
-simplerRedux
+  setStateFunction
+} = simplerRedux
 
 let reducersObject = {
 }

@@ -3,10 +3,10 @@ const path = require('path')
 const libraryName = 'simpler-redux'
 
 // Entry point for your library. This is assumed to be in the src directory at the root level.
-const libEntryJs = 'simpler-redux'
+const libEntryJs = 'index.js'
 
 // Entry point for your minimized build. This is assumed to be in the src directory at the root level.
-const buildEntryJs = 'simpler-redux.js'
+const buildEntryJs = 'index.js'
 
 // List of modules you require for your library and do not want them contained in your own
 // library module. For example, you would not want react code contained in your library so that

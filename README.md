@@ -1,17 +1,17 @@
 ## Redux library to simplify and reduce redux code. 
 
 ### Advantages
--	Simple react style setState and getState functions for redux state management.
--	100% compatibility with your current react-redux code base.
--	Automatic generation of mapStateToProps so that you do not have to write any.
--	Automatic generation of mapDispatchToProps so that you do not have to write any.
--	Automatic generation of the reducer so that you do not have to write any.
--	Reduced code size and code complexity as compared to react-redux.
--	Each reducer contains only one compare at each redux state transition which puts a small burden on performance.
--	Ability to handle a react component’s life cycle events in a simple way in the model code separate from the UI.
--	Complete separation of the UI from the business code according to a MVC standard.
--	Simple implementations for shared state management and shared business code without requiring additional reducers.
--	Thunk middleware is not required. Asynchronous calls are handled in the same way as synchronous calls.
+- Simple react style setState and getState functions for redux state management.
+- 100% compatibility with your current react-redux code base.
+- Automatic generation of mapStateToProps so that you do not have to write any.
+- Automatic generation of mapDispatchToProps so that you do not have to write any.
+- Automatic generation of the reducer so that you do not have to write any.
+- Reduced code size and code complexity as compared to react-redux.
+- Each reducer contains only one compare at each redux state transition which puts a small burden on performance.
+- Ability to handle a react component's life cycle events in a simple way in the model code separate from the react UI.
+- Complete separation of the UI from the business code according to a MVC standard.
+- Simple implementations for shared state management and shared business code without requiring additional reducers.
+- Thunk middleware is not required. Asynchronous UI calls are handled in the same way as synchronous UI calls.
 
 ### Installation
 `npm install simpler-redux`
