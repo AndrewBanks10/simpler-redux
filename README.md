@@ -123,11 +123,11 @@ export const serviceFunctions = {
 
 #### _stateAccessors_
 **Description**
-`stateAccessors(store, reducerKey)` - Returns a `setState` and `getState` in a object that provides easier state management without having to provide a store or reducerKey. This function should only be called as below in the storeIsDefinedCallback described above. Make sure to supply storeIsDefinedCallback to connectLifeCycleComponentWithStore or connectWithStore.
+`stateAccessors(store, reducerKey[, initialState])` - Returns a `setState` and `getState` in an object that provides easier state management without having to provide a store or reducerKey. If you pass in initialState then it will also return reducerState which is a proxy to the reducerKey state. For getting state, reducerState.key is equivalent to getState().key. For setting state, reducerState.key = 1 is equivalent to setState({key: 1}). It is really just syntactic sugar for the getState and setState functions. The funciton stateAccessors should only be called as below in the storeIsDefinedCallback described above. Make sure to supply storeIsDefinedCallback to connectLifeCycleComponentWithStore or connectWithStore.
 ```javascript
-let setState, getState
+let setState, getState, reducerState
 export const storeIsDefinedCallback = store => {
-  ({setState, getState} = stateAccessors(store, reducerKey))
+  ({setState, getState, reducerState} = stateAccessors(store, reducerKey, initialState))
 }
 
 // Below are examples of using the functions.
@@ -331,7 +331,7 @@ Here are the advantages of the above implementation.
 2. The consumer does not participate in the state management.
 3. Your organization can collect this sharable state management code into libraries so that you do not have to repeat yourself in various projects.
 4. The sharable code and the consumer code share the same paradigm (initialState, selectors, serviceFunctions). Therefore, the code is easy to understand.
-5. This technique is simpler and easier to maintain as compared to the shared stat management of redux.
+5. This technique is simpler and easier to maintain as compared to the shared state management of redux.
 
 So with simpler-redux state management you only need to think about three simple concepts:
 1. initialState to initialize the state at the reducer key.
