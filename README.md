@@ -134,6 +134,15 @@ export const storeIsDefinedCallback = store => {
 let counter = getState().counter
 setState({isBusy: true})
 ```
+#### _buildSelectorsFromUIState_
+**Description**
+`buildSelectorsFromUIState(reducerKey, uiInitialState) ` - Builds a  selectors object from uiInitialState and returns that object.
+**Parameters**
+-   `reducerKey` - Redux reducer key name.
+-   `uiInitialState` - uiInitialState should only contain keys that you want in the props of the react component.
+
+**Return Value**
+A UI selectors object.
 
 ### Similarity to react's component state management
 -   State transition
