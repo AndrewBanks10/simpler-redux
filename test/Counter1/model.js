@@ -22,10 +22,26 @@ export const selectors = {
 export const serviceFunctions = {
   increment: store =>
     store.setRState(reducerKey, { counter: store.getRState(reducerKey).counter + 1 }, 'increment'),
-  componentDidMount: store => hooksCalled.componentDidMount++,
-  componentWillUnmount: () => hooksCalled.componentWillUnmount++,
-  onConstructor: store => hooksCalled.onConstructor++,
-  onRender: store => hooksCalled.onRender++
+  componentDidMount: store => {
+    if (typeof store.setRState === 'function') {
+      hooksCalled.componentDidMount++
+    }
+  },
+  componentWillUnmount: store => {
+    if (typeof store.setRState === 'function') {
+      hooksCalled.componentWillUnmount++
+    }
+  },
+  onConstructor: store => {
+    if (typeof store.setRState === 'function') {
+      hooksCalled.onConstructor++
+    }
+  },
+  onRender: store => {
+    if (typeof store.setRState === 'function') {
+      hooksCalled.onRender++
+    }
+  }
 }
 
 export const reducer = generalReducer(reducerKey, initialState)

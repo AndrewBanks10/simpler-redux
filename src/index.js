@@ -1,6 +1,7 @@
 import {
   makeSharedModuleKeyName,
   stateAccessors,
+  buildSelectorsFromUIState,
   setStateFunction,
   getStateFunction,
   generalReducer,
@@ -24,5 +25,6 @@ export {
   allStateToProps,
   allServiceFunctionsToProps,
   connectWithStore,
-  connectLifeCycleComponentWithStore
+  connectLifeCycleComponentWithStore,
+  buildSelectorsFromUIState
 }

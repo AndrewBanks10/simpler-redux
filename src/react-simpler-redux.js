@@ -42,6 +42,9 @@ export const allStateToPropsUsingSelectors = selectors =>
       return obj
     }, {})
 
+//
+// Call this instead of the react-redux connect.
+//
 export const connectWithStore = (
   options
 ) => {
@@ -68,16 +71,23 @@ export const connectWithStore = (
     options.reduxOptions
   )(options.uiComponent)
 
+  const withRef = options.reduxOptions && options.reduxOptions.withRef
+
   class HOC extends React.Component {
     constructor (props, context) {
       super(props, context)
+      // Handles a callback for the consumer to cache and/or use the store.
+      if (storeIsDefinedCallback) {
+        storeIsDefinedCallback(this.context.store)
+        storeIsDefinedCallback = null
+      }
       this.setWrappedInstance = this.setWrappedInstance.bind(this)
     }
     // Support the redux connect getWrappedInstance out of this HOC.
     // This way, the consumer does nothing different when using this HOC
     // vs redux connected components when handling refs.
     setWrappedInstance (ref) {
-      if (!options.reduxOptions || !options.reduxOptions.withRef) {
+      if (!withRef) {
         return
       }
       // Refer to the original instance of the component wrapped with connect.
@@ -100,11 +110,6 @@ export const connectWithStore = (
       return this.wrappedInstance
     }
     render () {
-      // Handles a callback for the consumer to cache and/or use the store.
-      if (storeIsDefinedCallback) {
-        storeIsDefinedCallback(this.context.store)
-        storeIsDefinedCallback = null
-      }
       // Add the store to the props of the redux connected component so that it can be referenced
       // in mapDispatchToProps with ownProps.
       return (
@@ -182,6 +187,10 @@ export const hookedLifeCycleComponent = (Component, props = {}) => {
   )
 }
 
+//
+// Call this instead of connectWithStore to handle react life cycle events
+// in your model code serviceFunctions object.
+//
 export const connectLifeCycleComponentWithStore = options => {
   const component = options.uiComponent
   const hooked = props => hookedLifeCycleComponent(component, props)

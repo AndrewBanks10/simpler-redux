@@ -28,6 +28,14 @@ export const selectors = {
 }
 
 export const serviceFunctions = {
+  onConstructor: store => {
+    if (typeof store.setRState !== 'function') {
+      throw new Error('store is not defined.')
+    }
+    if (typeof setState !== 'function') {
+      throw new Error('setState is not defined.')
+    }
+  },
   increment1: store =>
     setRState(store, { [counter1Key]: store.getRState(reducerKey)[counter1Key] + 1 }, 'increment1'),
   increment2: () =>
