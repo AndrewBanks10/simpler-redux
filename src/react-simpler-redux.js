@@ -43,6 +43,30 @@ export const allStateToPropsUsingSelectors = selectors =>
     }, {})
 
 //
+// Builds a model selectors object from uiInitialState.
+// uiInitialState should only contain keys that you want in the
+// props of the react component.
+// This is not for specialized selectors for the UI that require conjunctions or
+// selectors from other modules, etc.
+// It is only for simple selectors of the nature state => state[reducerKey][stateKey]
+//
+export const buildSelectorsFromUIState = (reducerKey, uiInitialState) =>
+  Object.keys(uiInitialState).reduce((obj, e) => {
+    obj[e] = state => state[reducerKey][e]
+    return obj
+  }, {})
+
+//
+// Builds a mapStateToProps function that returns key/UI State pairs
+//
+const allStateToPropsUsingUIState = (reducerKey, initialUIState) =>
+  state =>
+    Object.keys(initialUIState).reduce((obj, e) => {
+      obj[e] = state[reducerKey][e]
+      return obj
+    }, {})
+
+//
 // Call this instead of the react-redux connect.
 //
 export const connectWithStore = (
@@ -50,13 +74,17 @@ export const connectWithStore = (
 ) => {
   options = {...options}
   let storeIsDefinedCallback = options.storeIsDefinedCallback
-  if (options.mapStateToProps === undefined && options.selectors !== undefined) {
-    options.mapStateToProps = allStateToPropsUsingSelectors(options.selectors)
+  if (options.mapStateToProps === undefined) {
+    if (options.selectors === undefined && options.reducerKey !== undefined && options.initialUIState !== undefined) {
+      options.mapStateToProps = allStateToPropsUsingUIState(options.reducerKey, options.initialUIState)
+    } else if (options.selectors !== undefined) {
+      options.mapStateToProps = allStateToPropsUsingSelectors(options.selectors)
+    }
   }
-  if (options.usingStateAccessors) {
+  if (options.noStoreParameterOnServiceFunctions) {
     if (process.env.NODE_ENV !== 'production') {
       if (options.serviceFunctions === undefined) {
-        throw new Error('connectWithStore: options.serviceFunctions cannot be undefined when specifying options.usingStateAccessors.')
+        throw new Error('connectWithStore: options.serviceFunctions cannot be undefined when specifying options.noStoreParameterOnServiceFunctions.')
       }
     }
     options.mapDispatchToProps = allServiceFunctionsToProps(options.serviceFunctions)

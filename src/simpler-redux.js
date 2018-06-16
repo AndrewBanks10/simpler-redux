@@ -110,17 +110,3 @@ export const stateAccessors = (store, reducerKey, initialState) => {
 // Use this to generate shared module keys.
 export const makeSharedModuleKeyName = (key, options) =>
   `${key}${options.id}`
-
-//
-// Builds a model selectors object from uiInitialState.
-// uiInitialState should only contain keys that you want in the
-// props of the react component.
-// This is not for specialized selectors for the UI that require conjunctions or
-// selectors from other modules, etc.
-// It is only for simple selectors of the nature state => state[reducerKey][stateKey]
-//
-export const buildSelectorsFromUIState = (reducerKey, uiInitialState) =>
-  Object.keys(uiInitialState).reduce((obj, e) => {
-    obj[e] = state => state[reducerKey][e]
-    return obj
-  }, {})
