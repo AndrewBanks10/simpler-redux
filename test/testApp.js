@@ -24,6 +24,9 @@ describe('View CounterForm', function () {
   it(`increment counter3 - validated.`, function (done) {
     testCauseAndEffectWithHtmlString('#increment3', '#counter3', `Counter: ${i + 1}`, done)
   })
+  it(`increment counter15 - validated.`, function (done) {
+    testCauseAndEffectWithHtmlString('#increment15', '#counter15', `Counter: 10`, done)
+  })
 })
 
 describe('Test Lifecyle component', function () {

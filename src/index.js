@@ -1,6 +1,5 @@
 export {
   makeSharedModuleKeyName,
-  stateAccessors,
   setStateFunction,
   getStateFunction,
   generalReducer,
@@ -8,6 +7,7 @@ export {
 } from './simpler-redux'
 
 export {
+  stateAccessors,
   connectWithStore,
   connectLifeCycleComponentWithStore,
   allStateToProps,

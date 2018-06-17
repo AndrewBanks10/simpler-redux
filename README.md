@@ -106,10 +106,10 @@ export const serviceFunctions = {
 ```
 -   `mergeProps` - Redux connect `mergeProps` parameter.
 -   `reduxOptions` - Redux connect `options` parameter.
--   `storeIsDefinedCallback` - Once the module's react component render is called for the first time, this callback will be invoked with the simpler redux store as a parameter. So it will be called before any possible user interactions.
+-   `storeIsDefinedCallback` - Once the module's react component render is called for the first time, this callback will be invoked with the simpler redux store and the `stateAccessors` function as parameters. So it will be called before any possible user interactions.
 -   `noStoreParameterOnServiceFunctions` - Used in conjunction with `storeIsDefinedCallback`. This will cause simpler-redux to not add the store parameter when calling the service functions. This should not be used for shared modules.
 -   `reducerKey` - Used only in conjunction with `initialUIState`. When both of these are specified simpler-redux will build the mapStateToProps function directly from the keys in `initialUIState`.
--   `initialUIState` - Used only in conjunction with `reducerKey`. When both of these are specified simpler-redux will build the mapStateToProps function directly from the keys in `initialUIState`. This can be only used when your react component props only needs state from the declarative state definition `initialUIState`.
+-   `initialUIState` - Used only in conjunction with `reducerKey`. When both of these are specified simpler-redux will build the mapStateToProps function directly from the keys in `initialUIState`. This can be only used when your react component props only needs state from the declarative state definition `initialUIState`. Do not specify this and `selectors`.
 
 **Return Value**
 None
@@ -132,7 +132,7 @@ export const serviceFunctions = {
 `stateAccessors(store, reducerKey[, initialState])` - Returns a `setState` and `getState` in an object that provides easier state management without having to provide a store or reducerKey. If you pass in initialState then it will also return reducerState which is a proxy to the reducerKey state. For getting state, reducerState.key is equivalent to getState().key. For setting state, reducerState.key = 1 is equivalent to setState({key: 1}). It is really just syntactic sugar for the getState and setState functions. The funciton stateAccessors should only be called as below in the storeIsDefinedCallback described above. Make sure to supply storeIsDefinedCallback to connectLifeCycleComponentWithStore or connectWithStore.
 ```javascript
 let setState, getState, reducerState
-export const storeIsDefinedCallback = store =>
+export const storeIsDefinedCallback = (store, stateAccessors) =>
   ({setState, getState, reducerState} = stateAccessors(store, reducerKey, initialState))
 
 // Below are examples of using the functions.

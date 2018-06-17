@@ -2,6 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import hoistStatics from 'hoist-non-react-statics'
+import getReducerKeyProxy from './proxy'
 
 //
 // Builds a mapDispatchToProps function based on the service functions and adds the store as
@@ -66,20 +67,60 @@ const allStateToPropsUsingUIState = (reducerKey, initialUIState) =>
       return obj
     }, {})
 
+const getState = (store, reducerKey) =>
+  () => store.getRState(reducerKey)
+
+const setState = (store, reducerKey) =>
+  (mergeState, type) => store.setRState(reducerKey, mergeState, type)
+
+//
+// Only call this in the storeIsDefinedCallback sent into connectWithStore above.
+// Use the store parameter provided in connectWithStore along with the reducerKey
+// in the module.
+//
+export const stateAccessors = (store, reducerKey, initialState) => {
+  if (process.env.NODE_ENV !== 'production') {
+    if (store === undefined) {
+      throw new Error('The first parameter (store) to stateAccessors must be defined.')
+    }
+    if (typeof reducerKey !== 'string') {
+      throw new Error('The second parameter (reducerKey) to stateAccessors must be a string.')
+    }
+  }
+  let ret = {
+    getState: getState(store, reducerKey),
+    setState: setState(store, reducerKey)
+  }
+
+  if (initialState !== undefined) {
+    ret.reducerState = getReducerKeyProxy(store, reducerKey, initialState)
+  }
+
+  return ret
+}
+
 //
 // Call this instead of the react-redux connect.
 //
 export const connectWithStore = (
   options
 ) => {
-  options = {...options}
-  let storeIsDefinedCallback = options.storeIsDefinedCallback
-  if (options.mapStateToProps === undefined) {
-    if (options.selectors === undefined && options.reducerKey !== undefined && options.initialUIState !== undefined) {
-      options.mapStateToProps = allStateToPropsUsingUIState(options.reducerKey, options.initialUIState)
-    } else if (options.selectors !== undefined) {
-      options.mapStateToProps = allStateToPropsUsingSelectors(options.selectors)
+  options = { ...options }
+  if (process.env.NODE_ENV !== 'production') {
+    if (options.uiComponent === undefined) {
+      throw new Error('connectWithStore: options.uiComponent cannot be undefined.')
     }
+  }
+  let storeIsDefinedCallback = options.storeIsDefinedCallback
+  if (process.env.NODE_ENV !== 'production') {
+    if (options.selectors !== undefined && options.initialUIState !== undefined) {
+      throw new Error('connectWithStore: Cannot input both options.selectors and options.initialUIState.')
+    }
+  }
+  if (options.selectors === undefined && options.reducerKey !== undefined && options.initialUIState !== undefined) {
+    options.mapStateToProps = allStateToPropsUsingUIState(options.reducerKey, options.initialUIState)
+  } else if (options.selectors !== undefined) {
+    options.mapStateToProps = allStateToPropsUsingSelectors(options.selectors)
   }
   if (options.noStoreParameterOnServiceFunctions) {
     if (process.env.NODE_ENV !== 'production') {
@@ -106,7 +147,7 @@ export const connectWithStore = (
       super(props, context)
       // Handles a callback for the consumer to cache and/or use the store.
       if (storeIsDefinedCallback) {
-        storeIsDefinedCallback(this.context.store)
+        storeIsDefinedCallback(this.context.store, stateAccessors)
         storeIsDefinedCallback = null
       }
       this.setWrappedInstance = this.setWrappedInstance.bind(this)

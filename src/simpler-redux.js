@@ -1,7 +1,6 @@
 /*
   Written by Andrew Banks.
 */
-import getReducerKeyProxy from './proxy'
 
 const simplerReduxReducerKey = '@@@@@srReducerKey'
 const simplerReduxObjectToMergeKey = '@@@@@srObjectToMergeKey'
@@ -57,6 +56,14 @@ export const registerSimplerRedux = reduxStore => {
 // Call this to generate your reducer.
 //
 export const generalReducer = (reducerKey, initialState) => {
+  if (process.env.NODE_ENV !== 'production') {
+    if (reducerKey === undefined) {
+      throw new Error('generalReducerL reducerKey must be defined.')
+    }
+    if (initialState === undefined) {
+      throw new Error('generalReducerL initialState must be defined.')
+    }
+  }
   return (state = { ...initialState }, action) => {
     if (action[simplerReduxReducerKey] === reducerKey) {
       return { ...state, ...action[simplerReduxObjectToMergeKey] }
@@ -74,38 +81,6 @@ export const getStateFunction = reducerKey =>
 export const setStateFunction = reducerKey =>
   (store, mergeState, type) =>
     store.setRState(reducerKey, mergeState, type)
-
-const getState = (store, reducerKey) =>
-  () => store.getRState(reducerKey)
-
-const setState = (store, reducerKey) =>
-  (mergeState, type) => store.setRState(reducerKey, mergeState, type)
-
-//
-// Only call this in the storeIsDefinedCallback sent into connectWithStore above.
-// Use the store parameter provided in connectWithStore along with the reducerKey
-// in the module.
-//
-export const stateAccessors = (store, reducerKey, initialState) => {
-  if (process.env.NODE_ENV !== 'production') {
-    if (store === undefined) {
-      throw new Error('The first parameter (store) to stateAccessors must be defined.')
-    }
-    if (typeof reducerKey !== 'string') {
-      throw new Error('The second parameter (reducerKey) to stateAccessors must be a string.')
-    }
-  }
-  let ret = {
-    getState: getState(store, reducerKey),
-    setState: setState(store, reducerKey)
-  }
-
-  if (initialState !== undefined) {
-    ret.reducerState = getReducerKeyProxy(store, reducerKey, initialState)
-  }
-
-  return ret
-}
 
 // Use this to generate shared module keys.
 export const makeSharedModuleKeyName = (key, options) =>
