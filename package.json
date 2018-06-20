@@ -1,6 +1,6 @@
 {
   "name": "simpler-redux",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Redux made simple",
   "main": "lib/simpler-redux.js",
   "scripts": {

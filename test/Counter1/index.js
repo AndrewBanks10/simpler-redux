@@ -1,5 +1,9 @@
+import { connectLifeCycleComponentWithStore, generalReducer } from '../../test/test'
+import uiComponent from './view'
+import * as modelDefinition from './model'
 
-import Container from './controller'
-import { reducerKey, reducer, selectors } from './model'
-export default Container
-export { reducerKey, reducer, selectors }
+export default connectLifeCycleComponentWithStore({ uiComponent, ...modelDefinition })
+
+export const reducerKey = modelDefinition.reducerKey
+export const selectors = modelDefinition.selectors
+export const reducer = generalReducer(modelDefinition.reducerKey, modelDefinition.initialState)

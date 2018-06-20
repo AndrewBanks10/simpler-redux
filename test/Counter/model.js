@@ -1,4 +1,4 @@
-import { getStateFunction, setStateFunction, stateAccessors, generalReducer } from '../../test/test'
+import { getStateFunction, setStateFunction, generalReducer } from '../../test/test'
 export const reducerKey = 'counter.4'
 
 const getRState = getStateFunction(reducerKey)
@@ -8,14 +8,16 @@ const counter1Key = 'counter1'
 const counter2Key = 'counter2'
 const counter3Key = 'counter3'
 
-export const initialState = {
+export const initialUIState = {
   [counter1Key]: 0,
   [counter2Key]: 0,
   [counter3Key]: 0
 }
 
+export const initialState = initialUIState
+
 let getState, setState, reducerState
-export const storeIsDefinedCallback = store =>
+export const storeIsDefinedCallback = (store, stateAccessors) =>
   ({ getState, setState, reducerState } = stateAccessors(store, reducerKey, initialState))
 
 export const selectors = {

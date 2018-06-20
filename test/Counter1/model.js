@@ -1,4 +1,3 @@
-import { generalReducer } from '../../test/test'
 export const reducerKey = 'counter.5'
 
 let hooksCalled = {
@@ -43,5 +42,3 @@ export const serviceFunctions = {
     }
   }
 }
-
-export const reducer = generalReducer(reducerKey, initialState)

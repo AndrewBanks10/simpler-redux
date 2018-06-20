@@ -1,5 +1,8 @@
+import { connectWithStore, generalReducer } from '../../test/test'
+import uiComponent from './view'
+import * as modelDefinition from './model'
 
-import Container from './controller'
-import { reducerKey, reducer, exportedServiceFunctions } from './model'
-export default Container
-export { reducerKey, reducer, exportedServiceFunctions }
+export default connectWithStore({ uiComponent, ...modelDefinition })
+export const reducerKey = modelDefinition.reducerKey
+export const reducer = generalReducer(modelDefinition.reducerKey, modelDefinition.initialState)
+export const exportedServiceFunctions = modelDefinition.exportedServiceFunctions

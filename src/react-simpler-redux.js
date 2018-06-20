@@ -10,7 +10,7 @@ import getReducerKeyProxy from './proxy'
 // by the react UI component when called in react.
 //
 export const allServiceFunctionsToPropsWithStore = serviceFunctions =>
-  (dispatch, ownProps) =>
+  (_dispatch, ownProps) =>
     Object.keys(serviceFunctions).reduce((obj, e) => {
       obj[e] = (...args) => serviceFunctions[e](ownProps.store, ...args)
       return obj
@@ -18,7 +18,7 @@ export const allServiceFunctionsToPropsWithStore = serviceFunctions =>
 
 //
 // Builds a mapDispatchToProps function based on the service functions and adds
-// all of the  parameters given by the react UI component when called in react.
+// all of the parameters given by the react UI component when called in react.
 //
 export const allServiceFunctionsToProps = serviceFunctions =>
   () =>
@@ -112,25 +112,26 @@ export const connectWithStore = (
     }
   }
   let storeIsDefinedCallback = options.storeIsDefinedCallback
-  if (process.env.NODE_ENV !== 'production') {
-    if (options.selectors !== undefined && options.initialUIState !== undefined) {
-      throw new Error('connectWithStore: Cannot input both options.selectors and options.initialUIState.')
-    }
-  }
-  if (options.selectors === undefined && options.reducerKey !== undefined && options.initialUIState !== undefined) {
-    options.mapStateToProps = allStateToPropsUsingUIState(options.reducerKey, options.initialUIState)
-  } else if (options.selectors !== undefined) {
-    options.mapStateToProps = allStateToPropsUsingSelectors(options.selectors)
-  }
-  if (options.noStoreParameterOnServiceFunctions) {
+  // If mapStateToProps is defined by the consumer then keep it no matter what.
+  if (options.mapStateToProps === undefined) {
     if (process.env.NODE_ENV !== 'production') {
-      if (options.serviceFunctions === undefined) {
-        throw new Error('connectWithStore: options.serviceFunctions cannot be undefined when specifying options.noStoreParameterOnServiceFunctions.')
+      if (options.selectors !== undefined && options.initialUIState !== undefined) {
+        throw new Error('connectWithStore: Cannot input both options.selectors and options.initialUIState.')
       }
     }
-    options.mapDispatchToProps = allServiceFunctionsToProps(options.serviceFunctions)
-  } else if (options.mapDispatchToProps === undefined && options.serviceFunctions !== undefined) {
-    options.mapDispatchToProps = allServiceFunctionsToPropsWithStore(options.serviceFunctions)
+    if (options.selectors !== undefined) {
+      options.mapStateToProps = allStateToPropsUsingSelectors(options.selectors)
+    } else if (options.reducerKey !== undefined && options.initialUIState !== undefined) {
+      options.mapStateToProps = allStateToPropsUsingUIState(options.reducerKey, options.initialUIState)
+    }
+  }
+  // If mapDispatchToProps is defined by the consumer then keep it no matter what.
+  if (options.mapDispatchToProps === undefined && options.serviceFunctions !== undefined) {
+    if (options.noStoreParameterOnServiceFunctions) {
+      options.mapDispatchToProps = allServiceFunctionsToProps(options.serviceFunctions)
+    } else {
+      options.mapDispatchToProps = allServiceFunctionsToPropsWithStore(options.serviceFunctions)
+    }
   }
   // call the react-redux connect.
   const ConnectedComponent = connect(
@@ -199,7 +200,7 @@ export const connectWithStore = (
   return hoistStatics(HOC, ConnectedComponent)
 }
 
-// This supports moving the react life cycle events into the model/business code.
+// This supports moving the react life cycle events into the model/business code serviceFunctions functions object.
 class ReactLifeCycleComponent extends React.Component {
   constructor (props) {
     super(props)
@@ -261,6 +262,11 @@ export const hookedLifeCycleComponent = (Component, props = {}) => {
 // in your model code serviceFunctions object.
 //
 export const connectLifeCycleComponentWithStore = options => {
+  if (process.env.NODE_ENV !== 'production') {
+    if (options.serviceFunctions === undefined) {
+      throw new Error('connectLifeCycleComponentWithStore: You must define and export a serviceFunctions object in the model code in order to use this function.')
+    }
+  }
   const component = options.uiComponent
   const hooked = props => hookedLifeCycleComponent(component, props)
   const newOptions = { ...options, uiComponent: hooked }

@@ -58,10 +58,10 @@ export const registerSimplerRedux = reduxStore => {
 export const generalReducer = (reducerKey, initialState) => {
   if (process.env.NODE_ENV !== 'production') {
     if (reducerKey === undefined) {
-      throw new Error('generalReducerL reducerKey must be defined.')
+      throw new Error('generalReducer: reducerKey must be defined.')
     }
     if (initialState === undefined) {
-      throw new Error('generalReducerL initialState must be defined.')
+      throw new Error('generalReducer: initialState must be defined.')
     }
   }
   return (state = { ...initialState }, action) => {

@@ -1,5 +1,5 @@
 import { createStore, combineReducers } from 'redux'
-import { registerSimplerRedux, generalReducer, stateAccessors } from '../src/simpler-redux'
+import { registerSimplerRedux, generalReducer, stateAccessors } from '../src'
 
 let moduleName = 'testing'
 let initialState = {

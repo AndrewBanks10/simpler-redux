@@ -1,12 +1,13 @@
-import { generalReducer, stateAccessors } from '../../test/test'
 export const reducerKey = 'counter.15'
 
-export const initialState = {
+export const initialUIState = {
   counter: 0
 }
 
+export const initialState = initialUIState
+
 let reducerState
-export const storeIsDefinedCallback = store =>
+export const storeIsDefinedCallback = (store, stateAccessors) =>
   ({ reducerState } = stateAccessors(store, reducerKey, initialState))
 
 export const serviceFunctions = {
@@ -22,4 +23,4 @@ export const serviceFunctions = {
   }
 }
 
-export const reducer = generalReducer(reducerKey, initialState)
+export const noStoreParameterOnServiceFunctions = true
