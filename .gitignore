@@ -5,3 +5,4 @@ temp/**
 docs/**
 package-lock.json
 index.dev.ejs
+todo.txt

@@ -44,6 +44,14 @@ None
 **Return Value**
 The state at `reduxState[reducerKey]`.
 
+#### _addListener_
+**Description**
+`simplerReduxStore.addListener(listener)` -  Adds a listener that will be called immediately after any simpler-redux state change.
+**Parameters**
+`function(reducerKey, objMerged, type){}` - The function that will be called after the state change.
+**Return Value**
+None
+
 #### _generalReducer_
 **Description**
 `generalReducer(reducerKey, initialState)` - Returns a reducer function that manages the redux state transitions at `reduxState[reducerKey]`. Add this and the reducerKeyName to your root reducer object.
@@ -117,7 +125,7 @@ None
 #### _connectLifeCycleComponentWithStore_
 
 **Description**
-The `connectLifeCycleComponentWithStore` function has the same object parameters as `connectWithStore` above and performs the same functions. However, it also allows you to implement react life cycle events in your `serviceFunctions` object. This allows you to move the react life cycle business code out of the UI and into the business code module. Below is an example of what can be done in `serviceFunctions`.
+The `connectLifeCycleComponentWithStore` function has the same object parameters as `connectWithStore` above and performs the same functions. However, it also allows you to implement react life cycle events in your `serviceFunctions` object. This allows you to move the non-DOM oriented react life cycle business code out of the UI and into the business code module. Below is an example of what can be done in `serviceFunctions`.
 ```javascript
 export const serviceFunctions = {
   componentDidMount: store => console.log('componentDidMount'),
@@ -175,8 +183,6 @@ The return value is the concatenation of the `key` followed by `options.id`.
 ### Sample usage of simpler-redux
 The model code is located at `src/Counter/model.js. This code manages the state for the reducerKey. It also is responsible for performing asynchronous operations and managing the state through those transactions. So, the model code contains the state management and the business logic.
 ```javascript
-import { generalReducer } from 'simpler-redux'
-
 export const reducerKey = 'counter.1'
 const counterKey = 'counter'
 
@@ -204,9 +210,6 @@ export const serviceFunctions = {
   increment: store =>
     store.setRState(reducerKey, { [counterKey]: store.getRState(reducerKey)[counterKey] + 1 }, 'increment')
 }
-
-// Simpler-redux builds the reducer for you. Add reducerKey and reducer to your global reducer object. 
-export const reducer = generalReducer(reducerKey, initialState)
 ```
 The View code is located at src/Counter/view.js. It should only display information received in the props and call functions supplied by the props. This code is responsible for display only. Any functional behavior should be supplied by the model to the controller and then into the props of the view where is is simply called by the view.
 ```javascript
@@ -218,28 +221,20 @@ export default ({counter, increment}) =>
     <button onClick={increment}>Increment</button>
   </div>
 ```
-The controller code is located at `src/Counter/controller.js`. This is generally the same for all controllers so it is basically a copy and paste.
+The controller code is located at `src/Counter/index.js`. This is generally the same for all controllers so it is basically a copy and paste.
 ```javascript
-import {connectWithStore} from 'simpler-redux'
-import Component from './view'
-import { selectors, serviceFunctions } from './model'
+import { connectWithStore, generalReducer } from 'simpler-redux'
+import uiComponent from './view/view'
+import * as modelDefinition from './model/model'
 
 // Use connectLifeCycleComponentWithStore to handle react life cycle events in the serviceFunctions object in the model code.
-export default connectWithStore({
-  uiComponent: Component,
-  selectors,
-  serviceFunctions
-})
+export default connectWithStore({ uiComponent, ...modelDefinition })
+export const reducerKey = modelDefinition.reducerKey
+export const reducer = generalReducer(reducerKey, modelDefinition.initialState)
+// Simpler-redux builds the reducer for you. Add reducerKey and reducer to your global reducer object. 
 ```
 Note that the above controller code does not contain any intelligence. Its purpose is simply to connect the model code to the view code without knowing anything about the details of either's implementions. Therefore, this technique removes any side effects of changing the model code or underlying state. Also, this code can be copy and pasted for any component because it does the same thing for most simpler-redux component modules.
 The src/Counter/index.js code exports features of the simpler-redux MVC module to the outside.
-```javascript
-import Container from './controller'
-import { reducerKey, reducer } from './model'
-export default Container
-export { reducerKey, reducer }
-```
-Note above that index.js and controller.js are going to be pretty much the same for any simpler-redux MVC module. So, you really only have to write the model.js and view.jsx code.
 
 The reducer code located at `src/reducers.js`.
 ```javascript

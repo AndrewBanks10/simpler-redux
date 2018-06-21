@@ -16,3 +16,4 @@ package-lock.json
 .gitattributes
 .babelrc
 docs/**
+todo.txt

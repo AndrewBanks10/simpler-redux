@@ -5,6 +5,8 @@
 const simplerReduxReducerKey = '@@@@@srReducerKey'
 const simplerReduxObjectToMergeKey = '@@@@@srObjectToMergeKey'
 
+let listeners = []
+
 const makeSetRState = reduxStore => {
   return (reducerKey, objToMerge, type) => {
     if (type === undefined) {
@@ -27,6 +29,10 @@ const makeSetRState = reduxStore => {
       [simplerReduxObjectToMergeKey]: objToMerge,
       type
     })
+
+    listeners.forEach(listener => {
+      listener(reducerKey, objToMerge, type)
+    })
   }
 }
 
@@ -41,6 +47,9 @@ const makeGetRState = reduxStore => {
   }
 }
 
+const addListener = listener =>
+  listeners.push(listener)
+
 //
 // This must be called with the redux store as a parameter after a createStore.
 // Then use the return of this function in the react-redux Provider element as the store.
@@ -49,6 +58,7 @@ export const registerSimplerRedux = reduxStore => {
   let wrappedReduxStore = Object.create(reduxStore)
   wrappedReduxStore.setRState = makeSetRState(wrappedReduxStore)
   wrappedReduxStore.getRState = makeGetRState(wrappedReduxStore)
+  wrappedReduxStore.addListener = addListener
   return wrappedReduxStore
 }
 
