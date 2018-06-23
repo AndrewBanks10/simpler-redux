@@ -1,16 +1,2 @@
-export {
-  makeSharedModuleKeyName,
-  setStateFunction,
-  getStateFunction,
-  generalReducer,
-  registerSimplerRedux
-} from './simpler-redux'
-
-export {
-  stateAccessors,
-  connectWithStore,
-  connectLifeCycleComponentWithStore,
-  allStateToProps,
-  allServiceFunctionsToProps,
-  buildSelectorsFromUIState
-} from './react-simpler-redux'
+export * from './simpler-redux'
+export * from './react-simpler-redux'

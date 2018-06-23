@@ -4,6 +4,15 @@ import PropTypes from 'prop-types'
 import hoistStatics from 'hoist-non-react-statics'
 import getReducerKeyProxy from './proxy'
 
+const reactLifeCycleEvents = {
+  onConstructor: 'onConstructor',
+  onRender: 'onRender',
+  componentDidMount: 'componentDidMount',
+  componentWillUnmount: 'componentWillUnmount',
+  componentDidCatch: 'componentDidCatch',
+  componentToRender: 'componentToRender'
+}
+
 //
 // Builds a mapDispatchToProps function based on the service functions and adds the store as
 // the first parameter to each service function and the rest of the parameters given
@@ -102,7 +111,7 @@ export const stateAccessors = (store, reducerKey, initialState) => {
 //
 // Call this instead of the react-redux connect.
 //
-export const connectWithStore = (
+const connectWithStoreBase = (
   options
 ) => {
   options = { ...options }
@@ -257,10 +266,6 @@ export const hookedLifeCycleComponent = (Component, props = {}) => {
   )
 }
 
-//
-// Call this instead of connectWithStore to handle react life cycle events
-// in your model code serviceFunctions object.
-//
 export const connectLifeCycleComponentWithStore = options => {
   if (process.env.NODE_ENV !== 'production') {
     if (options.serviceFunctions === undefined) {
@@ -268,7 +273,21 @@ export const connectLifeCycleComponentWithStore = options => {
     }
   }
   const component = options.uiComponent
-  const hooked = props => hookedLifeCycleComponent(component, props)
-  const newOptions = { ...options, uiComponent: hooked }
-  return connectWithStore(newOptions)
+  const hookedLCC = props => hookedLifeCycleComponent(component, props)
+  const newOptions = { ...options, uiComponent: hookedLCC }
+  return connectWithStoreBase(newOptions)
+}
+
+export const connectWithStore = options => {
+  // First decide if the serviceFunctions object contains react lifecycle calls.
+  if (options.serviceFunctions !== undefined) {
+    const hasLifeCycle = Object.keys(options.serviceFunctions).some(e =>
+      reactLifeCycleEvents[e] !== undefined
+    )
+    if (hasLifeCycle) {
+      return connectLifeCycleComponentWithStore(options)
+    }
+  }
+  // No react lifecycle calls.
+  return connectWithStoreBase(options)
 }

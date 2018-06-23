@@ -50,7 +50,7 @@ The state at `reduxState[reducerKey]`.
 **Parameters**
 `function(reducerKey, objMerged, type){}` - The function that will be called after the state change.
 **Return Value**
-None
+Returns a function to remove the listener from simpler-redux.
 
 #### _generalReducer_
 **Description**
@@ -93,7 +93,18 @@ export const selectors = {
   counter: state => state[reducerKey].counter
 }
 ```
--   `serviceFunctions` - The `serviceFunctions` is an object of functions that cause state changes at the reducerKey. It is used to build a mapDispatvchToProps function for the redux connect. Below is an example.
+-   `serviceFunctions` - The `serviceFunctions` is an object of functions that cause state changes at the reducerKey. It is used to build a mapDispatchToProps function for the redux connect. 
+You can also handle business code here for react lifecycle events. So for code that is non-DOM oriented, the following keys are supported and the associated functions will be called at the particular react life cycle event.
+```javascript
+  onConstructor,
+  onRender,
+  componentDidMount,
+  componentWillUnmount,
+  componentDidCatch,
+  componentToRender,
+```
+
+Below is an example.
 ```javascript
 // All keys in serviceFunctions will be in the props of the react component.
 // Each entry is a function that takes the simpler-redux store as a parameter
@@ -102,15 +113,17 @@ export const selectors = {
 // is not required.
 export const serviceFunctions = {
   // Below is an example of an synchronous call.
-  increment: store => store.setRState(reducerKey, { counter: store.getRState(reducerKey).counter + 1 }, 'increment')
-},
+  increment: store => store.setRState(reducerKey, { counter: store.getRState(reducerKey).counter + 1 }, 'increment'),
   // Below is an example of an asynchronous call.
   asyncCall: store => {
     store.setRState(reducerKey, { isBusy: true })
     someAsyncCall(
       data => store.setRState(reducerKey, { isBusy: false, data })
     )
-  }
+  },
+  // Below handles the componentDidMount react life cycle event.
+  componentDidMount: store => handleLoadData(store)
+}
 ```
 -   `mergeProps` - Redux connect `mergeProps` parameter.
 -   `reduxOptions` - Redux connect `options` parameter.
@@ -121,19 +134,6 @@ export const serviceFunctions = {
 
 **Return Value**
 None
-
-#### _connectLifeCycleComponentWithStore_
-
-**Description**
-The `connectLifeCycleComponentWithStore` function has the same object parameters as `connectWithStore` above and performs the same functions. However, it also allows you to implement react life cycle events in your `serviceFunctions` object. This allows you to move the non-DOM oriented react life cycle business code out of the UI and into the business code module. Below is an example of what can be done in `serviceFunctions`.
-```javascript
-export const serviceFunctions = {
-  componentDidMount: store => console.log('componentDidMount'),
-  onConstructor: store => console.log('onConstructor'),
-  componentWillUnmount: store => console.log('onComponentWillUnmount'),
-  onRender: store => console.log('onRender')
-}
-```
 
 #### _stateAccessors_
 **Description**

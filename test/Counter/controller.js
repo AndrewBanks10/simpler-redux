@@ -1,8 +1,8 @@
-import { connectLifeCycleComponentWithStore, allStateToProps } from '../../test/test'
+import { connectWithStore, allStateToProps } from '../../test/test'
 import Counter from './view'
 import { serviceFunctions, reducerKey, storeIsDefinedCallback } from './model'
 
-export default connectLifeCycleComponentWithStore({
+export default connectWithStore({
   uiComponent: Counter,
   mapStateToProps: allStateToProps(reducerKey),
   serviceFunctions,

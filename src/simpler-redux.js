@@ -6,6 +6,7 @@ const simplerReduxReducerKey = '@@@@@srReducerKey'
 const simplerReduxObjectToMergeKey = '@@@@@srObjectToMergeKey'
 
 let listeners = []
+let listenerId = 0
 
 const makeSetRState = reduxStore => {
   return (reducerKey, objToMerge, type) => {
@@ -30,8 +31,8 @@ const makeSetRState = reduxStore => {
       type
     })
 
-    listeners.forEach(listener => {
-      listener(reducerKey, objToMerge, type)
+    listeners.forEach(listenerObj => {
+      listenerObj.listener(reducerKey, objToMerge, type)
     })
   }
 }
@@ -47,8 +48,22 @@ const makeGetRState = reduxStore => {
   }
 }
 
-const addListener = listener =>
-  listeners.push(listener)
+const addListener = listener => {
+  if (process.env.NODE_ENV !== 'production') {
+    if (typeof listener !== 'function') {
+      throw new Error('addListener: The first argument must be a function.')
+    }
+  }
+  const id = listenerId++
+  listeners.push({ listener, id })
+  return () => {
+    let i = 0
+    for (; i < listeners.length && listeners[i].id !== id; ++i);
+    if (i < listeners.length) {
+      listeners.splice(i, 1)
+    }
+  }
+}
 
 //
 // This must be called with the redux store as a parameter after a createStore.
