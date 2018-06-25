@@ -1,9 +1,8 @@
 const proxyDefined = () =>
   typeof Proxy !== 'undefined'
 
-const getReducerKeyValue = (simplerReduxStore, reducerKey, key) => {
-  return simplerReduxStore.getRState(reducerKey)[key]
-}
+const getReducerKeyValue = (simplerReduxStore, reducerKey, key) =>
+  simplerReduxStore.getRState(reducerKey)[key]
 
 const setReducerKeyValue = (simplerReduxStore, reducerKey, key, value) => {
   simplerReduxStore.setRState(reducerKey, { [key]: value })
@@ -22,13 +21,11 @@ const defineProxyGetSet = (obj, simplerReduxStore, reducerKey, key) => {
   )
 }
 
-const simulateProxy = (simplerReduxStore, reducerKey, initialState) => {
-  const obj = {}
-  Object.keys(initialState).forEach(key => {
+const simulateProxy = (simplerReduxStore, reducerKey, initialState) =>
+  Object.keys(initialState).reduce((obj, key) => {
     defineProxyGetSet(obj, simplerReduxStore, reducerKey, key)
-  })
-  return obj
-}
+    return obj
+  }, {})
 
 const getProxyHandler = reducerKey => {
   return {

@@ -16,6 +16,28 @@
 ### Installation
 `npm install simpler-redux`
 
+### Migration from react-redux to simpler-redux
+1) Install the simpler-redux libraty. `npm i simpler-redux`
+2) Where you call the redux `createStore`, add the following where `reduxStore` is returned from the redux function `createStore`.
+```javascript
+// It is assumed that this file is configureStore.js
+import { registerSimplerRedux } from 'simpler-redux'
+
+export const simplerReduxStore = registerSimplerRedux(reduxStore)
+```
+3) In your react-redux `Provider`, replace the redux store with the `simplerReduxStore` as shown below.
+```javascript
+import React from 'react'
+import { Provider } from 'react-redux'
+import simplerReduxStore from './reduxstore'
+import App from './App'
+
+export default () =>
+  <Provider store={simplerReduxStore}>
+    <App />
+  </Provider>
+```
+
 ### Basics
 #### _registerSimplerRedux_
 **Description**

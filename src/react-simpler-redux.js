@@ -236,12 +236,12 @@ class ReactLifeCycleComponent extends React.Component {
 }
 
 ReactLifeCycleComponent.propTypes = {
-  componentToRender: PropTypes.func.isRequired,
   onConstructor: PropTypes.func,
+  onRender: PropTypes.func,
   componentDidMount: PropTypes.func,
   componentWillUnmount: PropTypes.func,
   componentDidCatch: PropTypes.func,
-  onRender: PropTypes.func
+  componentToRender: PropTypes.func.isRequired
 }
 
 export const hookedLifeCycleComponent = (Component, props = {}) => {

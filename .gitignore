@@ -6,3 +6,4 @@ docs/**
 package-lock.json
 index.dev.ejs
 todo.txt
+test.dev/**

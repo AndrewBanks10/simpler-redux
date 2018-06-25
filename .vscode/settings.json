@@ -105,11 +105,11 @@
 		".vscode/chrome/**": true,
 		"devdll/**": true
 	},
-    "files.exclude": {
-        "**/.git": true,
-        "**/.DS_Store": true,
-        "**/node_modules": true,
-		".vscode/chrome/**": true
-    },
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/node_modules": true,
+	  ".vscode/chrome/**": true
+  },
 	"typescript.check.tscVersion": false
 }
