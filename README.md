@@ -37,6 +37,7 @@ export default () =>
     <App />
   </Provider>
 ```
+4) Copy the simpler-redux MVC component scaffolding located [here](https://github.com/AndrewBanks10/simpler-redux-skeleton-project). It contains comments to guide your react component development.
 
 ### Basics
 #### _registerSimplerRedux_
