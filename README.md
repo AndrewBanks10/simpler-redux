@@ -29,7 +29,7 @@ export const simplerReduxStore = registerSimplerRedux(reduxStore)
 ```javascript
 import React from 'react'
 import { Provider } from 'react-redux'
-import simplerReduxStore from './reduxstore'
+import simplerReduxStore from './configureStore'
 import App from './App'
 
 export default () =>
