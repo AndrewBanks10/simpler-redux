@@ -6,7 +6,7 @@ export const storeIsDefinedCallback = store => {
 }
 
 export const initialState = {
-  remove: false
+  remove: true
 }
 
 export const selectors = {

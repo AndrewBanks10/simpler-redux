@@ -108,9 +108,6 @@ export const stateAccessors = (store, reducerKey, initialState) => {
   return ret
 }
 
-//
-// Call this instead of the react-redux connect.
-//
 const connectWithStoreBase = (
   options
 ) => {
@@ -121,6 +118,12 @@ const connectWithStoreBase = (
     }
   }
   let storeIsDefinedCallback = options.storeIsDefinedCallback
+  let isDynamicReducer = options.isDynamicReducer
+  let reducerKey = options.reducerKey
+  let initialState
+  if (isDynamicReducer && options.initialState !== undefined) {
+    initialState = { ...options.initialState }
+  }
   // If mapStateToProps is defined by the consumer then keep it no matter what.
   if (options.mapStateToProps === undefined) {
     if (process.env.NODE_ENV !== 'production') {
@@ -155,10 +158,22 @@ const connectWithStoreBase = (
   class HOC extends React.Component {
     constructor (props, context) {
       super(props, context)
+      // Handles the dynamic loading of the reducer.
+      if (isDynamicReducer) {
+        if (process.env.NODE_ENV !== 'production') {
+          if (reducerKey === undefined) {
+            throw new Error('To use isDynamicReducer, you must pass in a valid reducerKey as an option to connectWithStore.')
+          }
+          if (initialState === undefined) {
+            throw new Error(`To use isDynamicReducer, you must pass in a reducer initialState as an option to connectWithStore ${reducerKey}.`)
+          }
+        }
+        // Dynamic loading of the recducer.
+        this.context.store.addReducer(reducerKey, initialState)
+      }
       // Handles a callback for the consumer to cache and/or use the store.
-      if (storeIsDefinedCallback) {
+      if (typeof storeIsDefinedCallback === 'function') {
         storeIsDefinedCallback(this.context.store, stateAccessors)
-        storeIsDefinedCallback = null
       }
       this.setWrappedInstance = this.setWrappedInstance.bind(this)
     }
@@ -278,6 +293,9 @@ export const connectLifeCycleComponentWithStore = options => {
   return connectWithStoreBase(newOptions)
 }
 
+//
+// Call this instead of the react-redux connect.
+//
 export const connectWithStore = options => {
   // First decide if the serviceFunctions object contains react lifecycle calls.
   if (options.serviceFunctions !== undefined) {

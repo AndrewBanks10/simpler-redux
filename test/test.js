@@ -26,7 +26,8 @@ export const {
   allStateToProps,
   getStateFunction,
   stateAccessors,
-  setStateFunction
+  setStateFunction,
+  reducersPreloadedState
 } = simplerRedux
 
 let reducersObject = {
@@ -40,9 +41,11 @@ let initialState = {
   arrVal: []
 }
 
-const numModules = 100
+const numModules = 1000
 const baseModuleName = 'module'
-const numberStateTransitionsPerKey = 100
+const numberStateTransitionsPerKey = 500
+
+// Total testing of 500,000 state transitions on 1000 reducer keys.
 
 for (let i = 0; i < numModules; ++i) {
   let moduleName = `${baseModuleName}${i}`

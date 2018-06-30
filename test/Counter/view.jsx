@@ -9,7 +9,7 @@ class AddItem extends React.Component {
     return (
       <div>
         <input
-          ref='selector'
+          ref={c => (this.textInput = c)}
           type='text'
           id={testId}
           defaultValue={20}
@@ -23,8 +23,7 @@ const AddItemTest = connectWithStore({ uiComponent: AddItem, reduxOptions: { wit
 
 export default class SimpleReduxJavascript extends React.Component {
   componentDidMount () {
-    const addItem = this.refs['AddItem']
-    const element = addItem.getWrappedInstance().refs['selector']
+    const element = this._addItem.getWrappedInstance().textInput
     if (typeof element.focus !== 'function') {
       throw new Error('Ref failed in AddItemTest1')
     }
@@ -44,7 +43,7 @@ export default class SimpleReduxJavascript extends React.Component {
         <button id='increment2' onClick={this.props.increment2}>Increment</button>
         <div id='counter3'>Counter: {this.props.counter3}</div>
         <button id='increment3' onClick={this.props.increment3}>Increment</button>
-        <AddItemTest ref={'AddItem'} />
+        <AddItemTest ref={c => (this._addItem = c)} />
       </div>
     )
   }

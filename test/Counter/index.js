@@ -1,5 +1,9 @@
+import { connectWithStore, allStateToProps } from '../../test/test'
+import uiComponent from './view'
+import * as modelDefinition from './model'
 
-import Container from './controller'
-import { reducerKey, reducer } from './model'
-export default Container
-export { reducerKey, reducer }
+export default connectWithStore({
+  uiComponent,
+  ...modelDefinition,
+  mapStateToProps: allStateToProps(modelDefinition.reducerKey)
+})

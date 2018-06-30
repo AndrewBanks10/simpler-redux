@@ -30,13 +30,23 @@ let reducersObject = {
   reducer: reducer
 }
 
-const reduxStore = registerSimplerRedux(createStore(combineReducers(reducersObject)))
+const initialCounter = 20
+const reduxStore = registerSimplerRedux(
+  createStore(
+    combineReducers(reducersObject)
+  ),
+  reducersObject
+)
 
 reduxStore.dispatch(setBusy())
 
 reduxStore.setRState(moduleName, { testbool: true })
 
 const reducerState = stateAccessors(reduxStore, moduleName, initialState).reducerState
+
+if (reducerState.counter !== initialCounter) {
+  throw new Error('reducerState.counter !== initialCounter')
+}
 
 reducerState.counter = 1
 

@@ -8,7 +8,7 @@ let hooksCalled = {
 }
 
 export const initialState = {
-  counter: 0
+  counter: 10
 }
 
 export const selectors = {
@@ -42,3 +42,5 @@ export const serviceFunctions = {
     }
   }
 }
+
+export const isDynamicReducer = true
