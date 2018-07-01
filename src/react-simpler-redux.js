@@ -111,64 +111,78 @@ export const stateAccessors = (store, reducerKey, initialState) => {
 const connectWithStoreBase = (
   options
 ) => {
-  options = { ...options }
+  let {
+    reduxOptions,
+    storeIsDefinedCallback,
+    reducerKey,
+    isDynamicReducer,
+    initialState,
+    mapStateToProps,
+    mapDispatchToProps,
+    serviceFunctions,
+    uiComponent,
+    selectors,
+    initialUIState,
+    noStoreParameterOnServiceFunctions,
+    mergeProps
+  } = options
+
+  const withRef = reduxOptions && reduxOptions.withRef
+  if (initialState !== undefined) {
+    initialState = { ...initialState }
+  }
+
   if (process.env.NODE_ENV !== 'production') {
-    if (options.uiComponent === undefined) {
+    if (uiComponent === undefined) {
       throw new Error('connectWithStore: options.uiComponent cannot be undefined.')
     }
+    if (isDynamicReducer) {
+      if (reducerKey === undefined) {
+        throw new Error('To use isDynamicReducer, you must pass in a valid reducerKey as an option to connectWithStore.')
+      }
+      if (initialState === undefined) {
+        throw new Error(`To use isDynamicReducer, you must pass in a reducer initialState as an option to connectWithStore ${reducerKey}.`)
+      }
+    }
   }
-  let storeIsDefinedCallback = options.storeIsDefinedCallback
-  let isDynamicReducer = options.isDynamicReducer
-  let reducerKey = options.reducerKey
-  let initialState
-  if (isDynamicReducer && options.initialState !== undefined) {
-    initialState = { ...options.initialState }
-  }
+
   // If mapStateToProps is defined by the consumer then keep it no matter what.
-  if (options.mapStateToProps === undefined) {
+  if (mapStateToProps === undefined) {
     if (process.env.NODE_ENV !== 'production') {
-      if (options.selectors !== undefined && options.initialUIState !== undefined) {
+      if (selectors !== undefined && initialUIState !== undefined) {
         throw new Error('connectWithStore: Cannot input both options.selectors and options.initialUIState.')
       }
     }
-    if (options.selectors !== undefined) {
-      options.mapStateToProps = allStateToPropsUsingSelectors(options.selectors)
-    } else if (options.reducerKey !== undefined && options.initialUIState !== undefined) {
-      options.mapStateToProps = allStateToPropsUsingUIState(options.reducerKey, options.initialUIState)
+    if (selectors !== undefined) {
+      mapStateToProps = allStateToPropsUsingSelectors(selectors)
+    } else if (reducerKey !== undefined && initialUIState !== undefined) {
+      mapStateToProps = allStateToPropsUsingUIState(reducerKey, initialUIState)
     }
   }
-  // If mapDispatchToProps is defined by the consumer then keep it no matter what.
-  if (options.mapDispatchToProps === undefined && options.serviceFunctions !== undefined) {
-    if (options.noStoreParameterOnServiceFunctions) {
-      options.mapDispatchToProps = allServiceFunctionsToProps(options.serviceFunctions)
-    } else {
-      options.mapDispatchToProps = allServiceFunctionsToPropsWithStore(options.serviceFunctions)
-    }
-  }
-  // call the react-redux connect.
-  const ConnectedComponent = connect(
-    options.mapStateToProps,
-    options.mapDispatchToProps,
-    options.mergeProps,
-    options.reduxOptions
-  )(options.uiComponent)
 
-  const withRef = options.reduxOptions && options.reduxOptions.withRef
+  // If mapDispatchToProps is defined by the consumer then keep it no matter what.
+  if (mapDispatchToProps === undefined && serviceFunctions !== undefined) {
+    if (noStoreParameterOnServiceFunctions) {
+      mapDispatchToProps = allServiceFunctionsToProps(serviceFunctions)
+    } else {
+      mapDispatchToProps = allServiceFunctionsToPropsWithStore(serviceFunctions)
+    }
+  }
+
+  // Call the react-redux connect.
+  const ConnectedComponent = connect(
+    mapStateToProps,
+    mapDispatchToProps,
+    mergeProps,
+    reduxOptions
+  )(uiComponent)
 
   class HOC extends React.Component {
     constructor (props, context) {
       super(props, context)
       // Handles the dynamic loading of the reducer.
       if (isDynamicReducer) {
-        if (process.env.NODE_ENV !== 'production') {
-          if (reducerKey === undefined) {
-            throw new Error('To use isDynamicReducer, you must pass in a valid reducerKey as an option to connectWithStore.')
-          }
-          if (initialState === undefined) {
-            throw new Error(`To use isDynamicReducer, you must pass in a reducer initialState as an option to connectWithStore ${reducerKey}.`)
-          }
-        }
-        // Dynamic loading of the recducer.
+        // Dynamic loading of the reducer.
         this.context.store.addReducer(reducerKey, initialState)
       }
       // Handles a callback for the consumer to cache and/or use the store.
@@ -224,7 +238,9 @@ const connectWithStoreBase = (
   return hoistStatics(HOC, ConnectedComponent)
 }
 
+//
 // This supports moving the react life cycle events into the model/business code serviceFunctions functions object.
+//
 class ReactLifeCycleComponent extends React.Component {
   constructor (props) {
     super(props)

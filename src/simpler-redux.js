@@ -80,7 +80,8 @@ export const generalReducer = (reducerKey, initialState) => {
       throw new Error('generalReducer: initialState must be defined.')
     }
   }
-  return (state = { ...initialState }, action) => {
+  initialState = { ...initialState }
+  return (state = initialState, action) => {
     if (action[simplerReduxReducerKey] === reducerKey) {
       return { ...state, ...action[simplerReduxObjectToMergeKey] }
     }
