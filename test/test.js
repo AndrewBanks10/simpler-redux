@@ -3,17 +3,18 @@
 // Handle mocha testing.
 //
 import { createStore, combineReducers } from 'redux'
+import { consoleTitle } from './util'
 const assert = require('assert')
 const isEqual = require('lodash/isEqual')
 
 let simplerRedux
 // Use the source when testing with the debugger. This is "Debug Mocha Tests" entry.
 if (process.env.NODE_ENV === 'debugTesting') {
-  console.log('Testing ../src/index.js.')
+  consoleTitle('Testing ../src/index.js.')
   simplerRedux = require('../src/index.js')
   // Test the lib version. "Run Mocha Tests" entry.
 } else {
-  console.log('Testing ../lib/simpler-redux.js.')
+  consoleTitle('Testing ../lib/simpler-redux.js.')
   simplerRedux = require('../lib/simpler-redux.js')
 }
 
@@ -43,9 +44,12 @@ let initialState = {
 
 const numModules = 1000
 const baseModuleName = 'module'
-const numberStateTransitionsPerKey = 500
+const numberStateTransitionsPerKey = 1000
 
 // Total testing of 500,000 state transitions on 1000 reducer keys.
+consoleTitle(`Total number of redux reducer keys being tested: ${numModules}.`)
+consoleTitle(`Total number of redux state transitions per key being tested: ${numberStateTransitionsPerKey}.`)
+consoleTitle(`Total number of redux state transitions being tested: ${numModules * numberStateTransitionsPerKey}.`)
 
 for (let i = 0; i < numModules; ++i) {
   let moduleName = `${baseModuleName}${i}`

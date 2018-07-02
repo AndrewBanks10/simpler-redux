@@ -4,6 +4,7 @@ import PropTypes from 'prop-types'
 import hoistStatics from 'hoist-non-react-statics'
 import getReducerKeyProxy from './proxy'
 
+// Teact lifecycle events supported in the model code.
 const reactLifeCycleEvents = {
   onConstructor: 'onConstructor',
   onRender: 'onRender',
@@ -127,11 +128,6 @@ const connectWithStoreBase = (
     mergeProps
   } = options
 
-  const withRef = reduxOptions && reduxOptions.withRef
-  if (initialState !== undefined) {
-    initialState = { ...initialState }
-  }
-
   if (process.env.NODE_ENV !== 'production') {
     if (uiComponent === undefined) {
       throw new Error('connectWithStore: options.uiComponent cannot be undefined.')
@@ -144,15 +140,21 @@ const connectWithStoreBase = (
         throw new Error(`To use isDynamicReducer, you must pass in a reducer initialState as an option to connectWithStore ${reducerKey}.`)
       }
     }
+    if (storeIsDefinedCallback && typeof storeIsDefinedCallback !== 'function') {
+      throw new Error(`connectWithStore: options.storeIsDefinedCallback must be a function.`)
+    }
+    if (selectors !== undefined && initialUIState !== undefined) {
+      throw new Error('connectWithStore: Cannot export both selectors and initialUIState.')
+    }
+  }
+
+  const withRef = reduxOptions && reduxOptions.withRef
+  if (initialState !== undefined) {
+    initialState = { ...initialState }
   }
 
   // If mapStateToProps is defined by the consumer then keep it no matter what.
   if (mapStateToProps === undefined) {
-    if (process.env.NODE_ENV !== 'production') {
-      if (selectors !== undefined && initialUIState !== undefined) {
-        throw new Error('connectWithStore: Cannot input both options.selectors and options.initialUIState.')
-      }
-    }
     if (selectors !== undefined) {
       mapStateToProps = allStateToPropsUsingSelectors(selectors)
     } else if (reducerKey !== undefined && initialUIState !== undefined) {
@@ -182,11 +184,11 @@ const connectWithStoreBase = (
       super(props, context)
       // Handles the dynamic loading of the reducer.
       if (isDynamicReducer) {
-        // Dynamic loading of the reducer.
+        // This will build the reducer and add it to the reducers object.
         this.context.store.addReducer(reducerKey, initialState)
       }
       // Handles a callback for the consumer to cache and/or use the store.
-      if (typeof storeIsDefinedCallback === 'function') {
+      if (storeIsDefinedCallback) {
         storeIsDefinedCallback(this.context.store, stateAccessors)
       }
       this.setWrappedInstance = this.setWrappedInstance.bind(this)
@@ -200,8 +202,8 @@ const connectWithStoreBase = (
       }
       // Refer to the original instance of the component wrapped with connect.
       if (ref) {
-        if (typeof ref.getWrappedInstance !== 'function') {
-          if (process.env.NODE_ENV !== 'production') {
+        if (process.env.NODE_ENV !== 'production') {
+          if (typeof ref.getWrappedInstance !== 'function') {
             console.log('There is something wrong with redux connect.')
             return
           }

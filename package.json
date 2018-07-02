@@ -10,10 +10,6 @@
     "build:lib": "webpack --config devtools/webpack.config.lib.js",
     "build": "npm run build:lib && npm run builddll:dev",
     "lint": "eslint src/**",
-    "compile:del": "rimraf temp",
-    "compile:copy": "copyfiles src/**/*.* temp",
-    "compile:src": "babel ./test/**/*.js ./src/**/*.js --out-dir temp --source-maps --watch",
-    "buildmochadebug": "npm run compile:del && npm run compile:copy && npm run compile:src",
     "start": "cross-env NODE_ENV=development node devtools/devServer.js"
   },
   "repository": {

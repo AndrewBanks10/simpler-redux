@@ -9,7 +9,7 @@ const counter1Key = 'counter1'
 const counter2Key = 'counter2'
 const counter3Key = 'counter3'
 
-export const initialUIState = {
+const initialUIState = {
   [counter1Key]: 10,
   [counter2Key]: 10,
   [counter3Key]: 10
