@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 import hoistStatics from 'hoist-non-react-statics'
 import getReducerKeyProxy from './proxy'
 
-// Teact lifecycle events supported in the model code.
+// React lifecycle events supported in the model code.
 const reactLifeCycleEvents = {
   onConstructor: 'onConstructor',
   onRender: 'onRender',
@@ -19,23 +19,21 @@ const reactLifeCycleEvents = {
 // the first parameter to each service function and the rest of the parameters given
 // by the react UI component when called in react.
 //
-export const allServiceFunctionsToPropsWithStore = serviceFunctions =>
-  (_dispatch, ownProps) =>
-    Object.keys(serviceFunctions).reduce((obj, e) => {
+export const allServiceFunctionsToPropsWithStore = serviceFunctions => {
+  const keys = Object.keys(serviceFunctions)
+  return (_dispatch, ownProps) =>
+    keys.reduce((obj, e) => {
       obj[e] = (...args) => serviceFunctions[e](ownProps.store, ...args)
       return obj
     }, {})
+}
 
 //
 // Builds a mapDispatchToProps function based on the service functions and adds
 // all of the parameters given by the react UI component when called in react.
 //
 export const allServiceFunctionsToProps = serviceFunctions =>
-  () =>
-    Object.keys(serviceFunctions).reduce((obj, e) => {
-      obj[e] = (...args) => serviceFunctions[e](...args)
-      return obj
-    }, {})
+  () => ({ ...serviceFunctions })
 
 //
 // Builds a mapStateToProps function that returns the entire reducer state.
@@ -44,14 +42,16 @@ export const allStateToProps = reducerKey =>
   state => state[reducerKey]
 
 //
-// Builds a mapStateToProps function that returns key/selector pairs
+// Builds a mapStateToProps function based on a selectors object.
 //
-export const allStateToPropsUsingSelectors = selectors =>
-  state =>
-    Object.keys(selectors).reduce((obj, e) => {
+export const allStateToPropsUsingSelectors = selectors => {
+  const keys = Object.keys(selectors)
+  return state =>
+    keys.reduce((obj, e) => {
       obj[e] = selectors[e](state)
       return obj
     }, {})
+}
 
 //
 // Builds a model selectors object from uiInitialState.
@@ -61,21 +61,25 @@ export const allStateToPropsUsingSelectors = selectors =>
 // selectors from other modules, etc.
 // It is only for simple selectors of the nature state => state[reducerKey][stateKey]
 //
-export const buildSelectorsFromUIState = (reducerKey, uiInitialState) =>
-  Object.keys(uiInitialState).reduce((obj, e) => {
+export const buildSelectorsFromUIState = (reducerKey, initialUIState) => {
+  const keys = Object.keys(initialUIState)
+  return keys.reduce((obj, e) => {
     obj[e] = state => state[reducerKey][e]
     return obj
   }, {})
+}
 
 //
 // Builds a mapStateToProps function that returns key/UI State pairs
 //
-const allStateToPropsUsingUIState = (reducerKey, initialUIState) =>
-  state =>
-    Object.keys(initialUIState).reduce((obj, e) => {
+const allStateToPropsUsingUIState = (reducerKey, initialUIState) => {
+  const keys = Object.keys(initialUIState)
+  return state =>
+    keys.reduce((obj, e) => {
       obj[e] = state[reducerKey][e]
       return obj
     }, {})
+}
 
 const getState = (store, reducerKey) =>
   () => store.getRState(reducerKey)
@@ -311,9 +315,36 @@ export const connectLifeCycleComponentWithStore = options => {
   return connectWithStoreBase(newOptions)
 }
 
-//
-// Call this instead of the react-redux connect.
-//
+/*
+options object parameter
+
+reducerKey - (required) The key in the redux store for this module
+initialState - (required) The initial state that will be used in the reducer for initialization.
+initialUIState - (optional) If this is specified then simpler-redux will build a mapStateToProps
+  function based on the keys in this object.
+selectors - (optional) If this is specified then simpler-redux will build a mapStateToProps
+  function based on the selectors object.
+serviceFunctions - (optional) If this is specified then simpler-redux will build a mapDispatchToProps
+  function based on the keys in this object. These will be the service functions exposed to the
+  the react component in the props.
+noStoreParameterOnServiceFunctions = true (Optional) - By default, simpler-redux injects the store as the
+  first parameter when any service function is called by the UI. The UI parameters follow.
+  If this is set to true then simpler-redux will not do this store injection.
+storeIsDefinedCallback(store, stateAccessors) - (Optional) If this is specified then simpler-redux will call
+  this function with the simpler redux store as a parameter when the store becomes available to the react
+  component. Use this to call the simpler-redux stateAccessors in order to gain access to
+  setState, getState and reducerState.
+  Example:
+  let setState, reducerState
+  export const storeIsDefinedCallback = (store, stateAccessors) =>
+    ({setState, reducerState} = stateAccessors(store, reducerKey, initialState))
+isDynamicReducer - (Optional) This supports dynamic reducer loading. For this, simpler-redux
+    automatically takes care of building the reducer and loading it into the reducers object.
+
+Note: If you present any redux state in the react component then you must define and export either
+  a selectors object or an initialUIState object. Otherwise, you will not have any state in
+  the props of the react component.
+*/
 export const connectWithStore = options => {
   // First decide if the serviceFunctions object contains react lifecycle calls.
   if (options.serviceFunctions !== undefined) {

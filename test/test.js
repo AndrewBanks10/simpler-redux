@@ -28,7 +28,8 @@ export const {
   getStateFunction,
   stateAccessors,
   setStateFunction,
-  reducersPreloadedState
+  reducersPreloadedState,
+  buildSelectorsFromUIState
 } = simplerRedux
 
 let reducersObject = {
