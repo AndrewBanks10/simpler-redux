@@ -15,10 +15,11 @@ module.exports = {
 	},
 	"parserOptions": {
 		"ecmaFeatures": {
-            "jsx": true
-        },
-        "sourceType": "module"
-    },
+			"jsx": true
+		},
+		"sourceType": "module",
+		"ecmaVersion": 8
+	},
 
   "extends": [
 		"standard",

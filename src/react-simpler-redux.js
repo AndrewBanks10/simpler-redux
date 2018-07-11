@@ -36,6 +36,28 @@ export const allServiceFunctionsToProps = serviceFunctions =>
   () => ({ ...serviceFunctions })
 
 //
+// Builds a mapDispatchToProps function based on a serviceFunctionList object.
+// This allows including service functions from various modules.
+// The keylist allows selecting only a subset of a module's service functions.
+// If keylist is not specified then all service functions will be included.
+//
+export const allServiceFunctionsToPropsUsingServiceFunctionList = serviceFunctionList => {
+  serviceFunctionList = [...serviceFunctionList]
+  return (_dispatch, ownProps) =>
+    serviceFunctionList.reduce((obj, e) => {
+      const keylist = e.keylist ? e.keylist : Object.keys(e.serviceFunctions)
+      keylist.forEach(key => {
+        if (e.withStore) {
+          obj[key] = (...args) => e.serviceFunctions[key](ownProps.store, ...args)
+        } else {
+          obj[key] = (...args) => e.serviceFunctions[key](...args)
+        }
+      })
+      return obj
+    }, {})
+}
+
+//
 // Builds a mapStateToProps function that returns the entire reducer state.
 //
 export const allStateToProps = reducerKey =>
@@ -49,6 +71,24 @@ export const allStateToPropsUsingSelectors = selectors => {
   return state =>
     keys.reduce((obj, e) => {
       obj[e] = selectors[e](state)
+      return obj
+    }, {})
+}
+
+//
+// Builds a mapStateToProps function based on a selectorList object.
+// This allows including selectors from various modules.
+// The keylist allows selecting only a subset of a module's selectors.
+// If keylist is not specified then all selectors will be included.
+//
+export const allStateToPropsUsingSelectorList = selectorList => {
+  selectorList = [...selectorList]
+  return state =>
+    selectorList.reduce((obj, e) => {
+      const keylist = e.keylist ? e.keylist : Object.keys(e.selectors)
+      keylist.forEach(key => {
+        obj[key] = e.selectors[key](state)
+      })
       return obj
     }, {})
 }
@@ -74,11 +114,13 @@ export const buildSelectorsFromUIState = (reducerKey, initialUIState) => {
 //
 const allStateToPropsUsingUIState = (reducerKey, initialUIState) => {
   const keys = Object.keys(initialUIState)
-  return state =>
-    keys.reduce((obj, e) => {
-      obj[e] = state[reducerKey][e]
+  return state => {
+    const reducerState = state[reducerKey]
+    return keys.reduce((obj, e) => {
+      obj[e] = reducerState[e]
       return obj
     }, {})
+  }
 }
 
 const getState = (store, reducerKey) =>
@@ -117,6 +159,7 @@ const connectWithStoreBase = (
   options
 ) => {
   let {
+    uiComponent,
     reduxOptions,
     storeIsDefinedCallback,
     reducerKey,
@@ -125,8 +168,9 @@ const connectWithStoreBase = (
     mapStateToProps,
     mapDispatchToProps,
     serviceFunctions,
-    uiComponent,
+    serviceFunctionList,
     selectors,
+    selectorList,
     initialUIState,
     noStoreParameterOnServiceFunctions,
     mergeProps
@@ -159,7 +203,9 @@ const connectWithStoreBase = (
 
   // If mapStateToProps is defined by the consumer then keep it no matter what.
   if (mapStateToProps === undefined) {
-    if (selectors !== undefined) {
+    if (selectorList !== undefined) {
+      mapStateToProps = allStateToPropsUsingSelectorList(selectorList)
+    } else if (selectors !== undefined) {
       mapStateToProps = allStateToPropsUsingSelectors(selectors)
     } else if (reducerKey !== undefined && initialUIState !== undefined) {
       mapStateToProps = allStateToPropsUsingUIState(reducerKey, initialUIState)
@@ -167,11 +213,15 @@ const connectWithStoreBase = (
   }
 
   // If mapDispatchToProps is defined by the consumer then keep it no matter what.
-  if (mapDispatchToProps === undefined && serviceFunctions !== undefined) {
-    if (noStoreParameterOnServiceFunctions) {
-      mapDispatchToProps = allServiceFunctionsToProps(serviceFunctions)
-    } else {
-      mapDispatchToProps = allServiceFunctionsToPropsWithStore(serviceFunctions)
+  if (mapDispatchToProps === undefined) {
+    if (serviceFunctionList !== undefined) {
+      mapDispatchToProps = allServiceFunctionsToPropsUsingServiceFunctionList(serviceFunctionList)
+    } else if (serviceFunctions !== undefined) {
+      if (noStoreParameterOnServiceFunctions) {
+        mapDispatchToProps = allServiceFunctionsToProps(serviceFunctions)
+      } else {
+        mapDispatchToProps = allServiceFunctionsToPropsWithStore(serviceFunctions)
+      }
     }
   }
 

@@ -158,6 +158,16 @@ export const serviceFunctions = {
 -   `reducerKey` - Used only in conjunction with `initialUIState`. When both of these are specified simpler-redux will build the mapStateToProps function directly from the keys in `initialUIState`.
 -   `initialUIState` - Used only in conjunction with `reducerKey`. When both of these are specified simpler-redux will build the mapStateToProps function directly from the keys in `initialUIState`. This can be only used when your react component props only needs state from the declarative state definition `initialUIState`. Do not specify this and `selectors`.
 - `isDynamicReducer` - Supports dynamic loading of the component and the reducer. If the value is set to true then you must also specify the `rootReducersObject` parameter of your `registerSimplerRedux` call. Otherwise, simpler-redux will throw an exception indicating that you must do this.
+- `selectorList` - An array of {selectors, keylist[list of selector keys]}. This allows combining selectors from different modules into one in order to build a mapStateToProps that includes key/values from other reducers keys including the component reducer selectors. If you specify keylist then you can include only a subset of the selectors indtead of all of them.
+Below is an example.
+```javascript
+import { selectors as counterSelectors } from './Counter'
+
+export const selectorList = [
+  {counterSelectors, ['counter']}
+]
+```
+- `serviceFunctionList` - An array of {serviceFunctions, keylist[list of serviceFunctions keys], withStore}. This allows combining serviceFunctions from different modules into one in order to build a mapDispatchToProps that includes key/values from other module serviceFunctions. The keylist allows you to select only a subset of the associated service functions. The withStore set to true will cause the store to be the first parameter for all the service functions when called with the UI parameters following after.
 
 **Return Value**
 None

@@ -11,12 +11,16 @@ export const initialState = initialUIState
 // Test selectors
 export const selectors = buildSelectorsFromUIState(reducerKey, initialUIState)
 
+export const selectorsLisdt = [
+  { selectors }
+]
+
 let reducerState
 export const storeIsDefinedCallback = (store, stateAccessors) => {
   ({ reducerState } = stateAccessors(store, reducerKey, initialState))
 }
 
-export const serviceFunctions = {
+const serviceFunctions = {
   increment: () => {
     let val = reducerState.counter
     reducerState.counter += 10
@@ -26,5 +30,9 @@ export const serviceFunctions = {
     consoleSuccess(`Verify reducerState.counter is ${val + 10}.`)
   }
 }
+
+export const serviceFunctionList = [
+  { serviceFunctions }
+]
 
 export const isDynamicReducer = true

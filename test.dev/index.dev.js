@@ -2,9 +2,10 @@ import { createStore, combineReducers } from 'redux'
 import { registerSimplerRedux, generalReducer, stateAccessors } from '../src'
 
 let moduleName = 'testing'
+const initialCounter = 20
 let initialState = {
   testbool: false,
-  counter: 0
+  counter: initialCounter
 }
 
 const SET_BUSY = 'SET_BUSY'
@@ -30,7 +31,6 @@ let reducersObject = {
   reducer: reducer
 }
 
-const initialCounter = 20
 const reduxStore = registerSimplerRedux(
   createStore(
     combineReducers(reducersObject)
@@ -47,6 +47,14 @@ const reducerState = stateAccessors(reduxStore, moduleName, initialState).reduce
 if (reducerState.counter !== initialCounter) {
   throw new Error('reducerState.counter !== initialCounter')
 }
+
+const object1 = {
+  property1: 42,
+  property2: {test: 42}
+}
+
+const object2 = Object.freeze(object1)
+object2.property2.test = 43
 
 reducerState.counter = 1
 
