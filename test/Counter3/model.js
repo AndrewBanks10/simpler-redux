@@ -11,7 +11,8 @@ export const initialState = initialUIState
 // Test selectors
 export const selectors = buildSelectorsFromUIState(reducerKey, initialUIState)
 
-export const selectorsLisdt = [
+// Test selectorsList
+export const selectorsList = [
   { selectors }
 ]
 
