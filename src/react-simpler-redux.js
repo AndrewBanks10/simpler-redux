@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import hoistStatics from 'hoist-non-react-statics'
-import getReducerKeyProxy from './proxy'
+import { simplerReduxOptions, stateAccessors } from './simpler-redux'
 
 // React lifecycle events supported in the model code.
 const reactLifeCycleEvents = {
@@ -123,38 +123,6 @@ const allStateToPropsUsingUIState = (reducerKey, initialUIState) => {
   }
 }
 
-const getState = (store, reducerKey) =>
-  () => store.getRState(reducerKey)
-
-const setState = (store, reducerKey) =>
-  (mergeState, type) => store.setRState(reducerKey, mergeState, type)
-
-//
-// Only call this in the storeIsDefinedCallback sent into connectWithStore above.
-// Use the store parameter provided in connectWithStore along with the reducerKey
-// in the module.
-//
-export const stateAccessors = (store, reducerKey, initialState) => {
-  if (process.env.NODE_ENV !== 'production') {
-    if (store === undefined) {
-      throw new Error('The first parameter (store) to stateAccessors must be defined.')
-    }
-    if (typeof reducerKey !== 'string') {
-      throw new Error('The second parameter (reducerKey) to stateAccessors must be a string.')
-    }
-  }
-  let ret = {
-    getState: getState(store, reducerKey),
-    setState: setState(store, reducerKey)
-  }
-
-  if (initialState !== undefined) {
-    ret.reducerState = getReducerKeyProxy(store, reducerKey, initialState)
-  }
-
-  return ret
-}
-
 const connectWithStoreBase = (
   options
 ) => {
@@ -193,6 +161,28 @@ const connectWithStoreBase = (
     }
     if (selectors !== undefined && initialUIState !== undefined) {
       throw new Error('connectWithStore: Cannot export both selectors and initialUIState.')
+    }
+    if (selectorList !== undefined) {
+      selectorList.forEach(e => {
+        if (e.keylist !== undefined) {
+          e.keylist.forEach(key => {
+            if (typeof e.selectors[key] !== 'function') {
+              throw new Error(`The selectors key ${key} is not in the selectors.`)
+            }
+          })
+        }
+      })
+    }
+    if (serviceFunctionList !== undefined) {
+      serviceFunctionList.forEach(e => {
+        if (e.keylist !== undefined) {
+          e.keylist.forEach(key => {
+            if (typeof e.serviceFunctions[key] !== 'function') {
+              throw new Error(`The serviceFunctions key ${key} is not in the serviceFunctions.`)
+            }
+          })
+        }
+      })
     }
   }
 
@@ -242,7 +232,7 @@ const connectWithStoreBase = (
     constructor (props, context) {
       super(props, context)
       // Handles the dynamic loading of the reducer.
-      if (isDynamicReducer) {
+      if (isDynamicReducer || simplerReduxOptions.isDynamicReducer) {
         // This will build the reducer and add it to the reducers object.
         this.context.store.addReducer(reducerKey, initialState)
       }

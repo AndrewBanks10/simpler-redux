@@ -42,11 +42,13 @@ export default () =>
 ### Basics
 #### _registerSimplerRedux_
 **Description**
-`registerSimplerRedux(reduxStore[, rootReducersObject[, preloadedState]])` - Wrap this around your redux `createStore` call. It returns an enhanced reduxStore object with the redux store as its prototype.
+`registerSimplerRedux(reduxStore[, rootReducersObject[, preloadedState[, options]]])` - Wrap this around your redux `createStore` call. It returns an enhanced reduxStore object with the redux store as its prototype.
 **Parameters**
 `reduxStore` - The redux store that is returned by createStore.
 `rootReducersObject` - If you want to use dynamic reducer loading, specify this object parameter. Note that this is not the combineReducers object but the actual reducers object. If this is a new project, it is recommended that you use dynamic reducer loading exclusively. Then specifify this as the empty object {}. With dynamic reducer loading, in your simpler-redux MVC mode code, specify `export const isDynamicReducer = true`. Then simpler-redux will automatically build your reducer and also load it when the component is constructed. Therefore, simpler-redux automatically supports react loadables without any code rewrites.
 `preloadedState`- If you specify the `rootReducersObject` and have state to preload then you must specify it in this parameter.
+`options`
+- isDynamicReducer - Default to dynamic reducer loading for react components so that you do not have to specify isDynamicReducer in each component module.
 **Return Value**
 A simpler redux store. Add this as a store prop to the react-redux Provider element.
 
@@ -174,7 +176,7 @@ None
 
 #### _stateAccessors_
 **Description**
-`stateAccessors(store, reducerKey[, initialState])` - Returns a `setState` and `getState` in an object that provides easier state management without having to provide a store or reducerKey. If you pass in initialState then it will also return reducerState which is a proxy to the reducerKey state. For getting state, reducerState.key is equivalent to getState().key. For setting state, reducerState.key = 1 is equivalent to setState({key: 1}). It is really just syntactic sugar for the getState and setState functions. The funciton stateAccessors should only be called as below in the storeIsDefinedCallback described above. Make sure to supply storeIsDefinedCallback to connectLifeCycleComponentWithStore or connectWithStore.
+`stateAccessors(store, reducerKey[, initialState])` - Returns a `setState`, `getState` and `reducerState` in an object that provides easier state management without having to provide a store or reducerKey. If you pass in initialState then it will also return reducerState which is a proxy to the reducerKey state. For getting state, reducerState.key is equivalent to getState().key. For setting state, reducerState.key = 1 is equivalent to setState({key: 1}). It is really just syntactic sugar for the getState and setState functions. The funciton stateAccessors should only be called as below in the storeIsDefinedCallback described above. Make sure to supply storeIsDefinedCallback to connectLifeCycleComponentWithStore or connectWithStore.
 ```javascript
 let setState, getState, reducerState
 export const storeIsDefinedCallback = (store, stateAccessors) =>
@@ -216,6 +218,13 @@ With shared state management, you can write one module that performs state manag
 - 
 **Return Value**
 The return value is the concatenation of the `key` followed by `options.id`.
+
+#### _createModuleData_
+**Description**
+`createModuleData(store, reducerKey[, initialState])` - Creates redux module data to replace typical module data. This way, you can manage and track changes to your module data through redux logging software.
+
+**Return Value**
+Returns a `setState`, `getState` and `reducerState` in an object.
 
 ### Sample usage of simpler-redux
 The model code is located at `src/Counter/model.js. This code manages the state for the reducerKey. It also is responsible for performing asynchronous operations and managing the state through those transactions. So, the model code contains the state management and the business logic.

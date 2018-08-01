@@ -2,6 +2,7 @@
   Written by Andrew Banks. MIT license.
 */
 import { combineReducers } from 'redux'
+import getReducerKeyProxy from './proxy'
 
 const simplerReduxReducerKey = '@@@@@srReducerKey'
 const simplerReduxObjectToMergeKey = '@@@@@srObjectToMergeKey'
@@ -9,6 +10,7 @@ const simplerReduxObjectToMergeKey = '@@@@@srObjectToMergeKey'
 let listeners = []
 let listenerId = 0
 let currentReducersObject
+export let simplerReduxOptions
 
 const makeSetRState = reduxStore => {
   return (reducerKey, objToMerge, type) => {
@@ -122,12 +124,20 @@ const buildAddReducer = (store, preloadedState) => {
 // If you want only dynamic reducers, use state => state (null reducer) for the redux createStore reducer
 // and { } as the rootReducersObject for the call below.
 // If you use rootReducersObject then you should also pass in preloadedState (if it exists).
+// options
+//  1) isDynamicReducer - Default to dynamic reducer loading for react components so that you do not have to specify isDynamicReducer in each component module.
 //
-export const registerSimplerRedux = (reduxStore, rootReducersObject, preloadedState = {}) => {
+export const registerSimplerRedux = (
+  reduxStore,
+  rootReducersObject,
+  preloadedState = {},
+  options = {}
+) => {
   let wrappedReduxStore = Object.create(reduxStore)
   wrappedReduxStore.setRState = makeSetRState(wrappedReduxStore)
   wrappedReduxStore.getRState = makeGetRState(wrappedReduxStore)
   wrappedReduxStore.addListener = addListener
+  simplerReduxOptions = options
   // Support for dynamic reducer loading.
   if (rootReducersObject !== undefined) {
     currentReducersObject = { ...rootReducersObject }
@@ -168,3 +178,56 @@ export const reducersPreloadedState = (reducersObject, preloadedState) =>
 
 export const isDynamicReducerLoading = () =>
   currentReducersObject !== undefined
+
+const getState = (store, reducerKey) =>
+  () => store.getRState(reducerKey)
+
+const setState = (store, reducerKey) =>
+  (mergeState, type) => store.setRState(reducerKey, mergeState, type)
+
+//
+// Only call this in the storeIsDefinedCallback sent into connectWithStore above.
+// Use the store parameter provided in connectWithStore along with the reducerKey
+// in the module.
+//
+export const stateAccessors = (store, reducerKey, initialState) => {
+  if (process.env.NODE_ENV !== 'production') {
+    if (store === undefined) {
+      throw new Error('The first parameter (store) to stateAccessors must be defined.')
+    }
+    if (typeof reducerKey !== 'string') {
+      throw new Error('The second parameter (reducerKey) to stateAccessors must be a string.')
+    }
+  }
+  let ret = {
+    getState: getState(store, reducerKey),
+    setState: setState(store, reducerKey)
+  }
+
+  if (initialState !== undefined) {
+    ret.reducerState = getReducerKeyProxy(store, reducerKey, initialState)
+  }
+
+  return ret
+}
+
+// Creates general purpose module data under a redux reducerKey.
+// A redux store must be imported from your redux createStore module for the argument below.
+export const createModuleData = (store, reducerKey, initialState) => {
+  if (process.env.NODE_ENV !== 'production') {
+    if (!isDynamicReducerLoading()) {
+      throw new Error('To call createModuleData, you must specify a rootReducersObject in the 2nd argument of registerSimplerRedux which can be just {}.')
+    }
+    if (store === undefined) {
+      throw new Error('The first parameter (store) to createModuleData must be defined.')
+    }
+    if (typeof reducerKey !== 'string') {
+      throw new Error('The seccond parameter (reducerKey) to createModuleData must a string.')
+    }
+    if (initialState === undefined) {
+      throw new Error('The third parameter (initialState) to createModuleData must be defined.')
+    }
+  }
+  store.addReducer(reducerKey, initialState)
+  return stateAccessors(store, reducerKey, initialState)
+}

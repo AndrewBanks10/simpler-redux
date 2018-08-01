@@ -29,7 +29,8 @@ export const {
   stateAccessors,
   setStateFunction,
   reducersPreloadedState,
-  buildSelectorsFromUIState
+  buildSelectorsFromUIState,
+  createModuleData
 } = simplerRedux
 
 let reducersObject = {
@@ -47,7 +48,7 @@ const numModules = 1000
 const baseModuleName = 'module'
 const numberStateTransitionsPerKey = 1000
 
-// Total testing of 500,000 state transitions on 1000 reducer keys.
+// Total testing of 1,000,000 state transitions on 1000 reducer keys.
 consoleTitle(`Total number of redux reducer keys being tested: ${numModules}.`)
 consoleTitle(`Total number of redux state transitions per key being tested: ${numberStateTransitionsPerKey}.`)
 consoleTitle(`Total number of redux state transitions being tested: ${numModules * numberStateTransitionsPerKey}.`)
@@ -57,7 +58,12 @@ for (let i = 0; i < numModules; ++i) {
   reducersObject[moduleName] = generalReducer(moduleName, initialState)
 }
 
-const reduxStore = registerSimplerRedux(createStore(combineReducers(reducersObject)))
+const reduxStore = registerSimplerRedux(
+  createStore(
+    combineReducers(reducersObject)
+  ),
+  reducersObject
+)
 
 describe('Verify setup.', function () {
   it(`The reduxStore is valid.`, function () {
@@ -65,7 +71,7 @@ describe('Verify setup.', function () {
   })
   it(`The redux state should contain ${numModules} keys.`, function () {
     const st = reduxStore.getState()
-    assert(Object.keys(st).length === numModules)
+    assert(Object.keys(st).length === numModules + 1)
   })
   it(`The redux state should match the ${numModules} defined keys.`, function () {
     const st = reduxStore.getState()
@@ -109,4 +115,23 @@ describe(`Test setState/getState with the number of state transitions on each ke
       }
     })
   }
+})
+
+const moduleDataReducer = 'moduleDataReducer'
+const moduleData = {
+  counter: 0
+}
+describe(`Test createModuleData`, function () {
+  let dataObj = createModuleData(reduxStore, moduleDataReducer, moduleData)
+  it(`counter should be 0.`, function () {
+    assert(dataObj.getState().counter === 0)
+  })
+  it(`counter should be 1.`, function () {
+    dataObj.setState({counter: 1})
+    assert(dataObj.getState().counter === 1)
+  })
+  it(`counter should be 2.`, function () {
+    dataObj.reducerState.counter++
+    assert(dataObj.reducerState.counter === 2)
+  })
 })
