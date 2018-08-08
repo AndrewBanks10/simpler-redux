@@ -7,10 +7,12 @@ import getReducerKeyProxy from './proxy'
 const simplerReduxReducerKey = '@@@@@srReducerKey'
 const simplerReduxObjectToMergeKey = '@@@@@srObjectToMergeKey'
 
+const objectType = obj => Object.prototype.toString.call(obj).slice(8, -1)
+const isObjectType = obj => objectType(obj) === 'Object'
+
 let listeners = []
 let listenerId = 0
 let currentReducersObject
-export let simplerReduxOptions
 
 const makeSetRState = reduxStore => {
   return (reducerKey, objToMerge, type) => {
@@ -21,8 +23,8 @@ const makeSetRState = reduxStore => {
       if (typeof reducerKey !== 'string') {
         throw new Error('setRState: The first argument must be a string.')
       }
-      if (objToMerge === undefined) {
-        throw new Error('setRState: The second argument cannot be undefined.')
+      if (!isObjectType(objToMerge)) {
+        throw new Error('setRState: The second argument must be a primitive object type.')
       }
       if (typeof type !== 'string') {
         throw new Error('setRState: The third argument must be a string.')
@@ -137,7 +139,6 @@ export const registerSimplerRedux = (
   wrappedReduxStore.setRState = makeSetRState(wrappedReduxStore)
   wrappedReduxStore.getRState = makeGetRState(wrappedReduxStore)
   wrappedReduxStore.addListener = addListener
-  simplerReduxOptions = options
   // Support for dynamic reducer loading.
   if (rootReducersObject !== undefined) {
     currentReducersObject = { ...rootReducersObject }
@@ -183,7 +184,14 @@ const getState = (store, reducerKey) =>
   () => store.getRState(reducerKey)
 
 const setState = (store, reducerKey) =>
-  (mergeState, type) => store.setRState(reducerKey, mergeState, type)
+  (mergeState, type) => {
+    if (process.env.NODE_ENV !== 'production') {
+      if (!isObjectType(mergeState)) {
+        throw new Error('setState: The first argument must be a primitive object type.')
+      }
+    }
+    store.setRState(reducerKey, mergeState, type)
+  }
 
 //
 // Only call this in the storeIsDefinedCallback sent into connectWithStore above.

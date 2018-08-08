@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import hoistStatics from 'hoist-non-react-statics'
-import { simplerReduxOptions, stateAccessors } from './simpler-redux'
+import { isDynamicReducerLoading, stateAccessors } from './simpler-redux'
 
 // React lifecycle events supported in the model code.
 const reactLifeCycleEvents = {
@@ -94,8 +94,8 @@ export const allStateToPropsUsingSelectorList = selectorList => {
 }
 
 //
-// Builds a model selectors object from uiInitialState.
-// uiInitialState should only contain keys that you want in the
+// Builds a model selectors object from either initialUIState or .
+// initialUIState should only contain keys that you want in the
 // props of the react component.
 // This is not for specialized selectors for the UI that require conjunctions or
 // selectors from other modules, etc.
@@ -148,14 +148,6 @@ const connectWithStoreBase = (
     if (uiComponent === undefined) {
       throw new Error('connectWithStore: options.uiComponent cannot be undefined.')
     }
-    if (isDynamicReducer) {
-      if (reducerKey === undefined) {
-        throw new Error('To use isDynamicReducer, you must pass in a valid reducerKey as an option to connectWithStore.')
-      }
-      if (initialState === undefined) {
-        throw new Error(`To use isDynamicReducer, you must pass in a reducer initialState as an option to connectWithStore ${reducerKey}.`)
-      }
-    }
     if (storeIsDefinedCallback && typeof storeIsDefinedCallback !== 'function') {
       throw new Error(`connectWithStore: options.storeIsDefinedCallback must be a function.`)
     }
@@ -186,9 +178,14 @@ const connectWithStoreBase = (
     }
   }
 
-  // Default initialState (reducer state) to initialUIState (component props state)
+  // Default initialState (reducer state) to initialUIState (component props state).
   if (initialState === undefined) {
     initialState = initialUIState
+  }
+
+  // Default initialUIState (component props state) to initialState (reducer state).
+  if (initialUIState === undefined) {
+    initialUIState = initialState
   }
 
   const withRef = reduxOptions && reduxOptions.withRef
@@ -203,7 +200,13 @@ const connectWithStoreBase = (
     } else if (selectors !== undefined) {
       mapStateToProps = allStateToPropsUsingSelectors(selectors)
     } else if (reducerKey !== undefined && initialUIState !== undefined) {
-      mapStateToProps = allStateToPropsUsingUIState(reducerKey, initialUIState)
+      // This is for efficiency. initialUIState and initialState are the same so
+      // mapStateToProps simply returns the entire reducerKey state.
+      if (Object.keys(initialUIState).length === Object.keys(initialState).length) {
+        mapStateToProps = allStateToProps(reducerKey)
+      } else {
+        mapStateToProps = allStateToPropsUsingUIState(reducerKey, initialUIState)
+      }
     }
   }
 
@@ -232,9 +235,11 @@ const connectWithStoreBase = (
     constructor (props, context) {
       super(props, context)
       // Handles the dynamic loading of the reducer.
-      if (isDynamicReducer || simplerReduxOptions.isDynamicReducer) {
+      if (isDynamicReducer !== false && isDynamicReducerLoading()) {
         // This will build the reducer and add it to the reducers object.
-        this.context.store.addReducer(reducerKey, initialState)
+        if (reducerKey !== undefined && initialState !== undefined) {
+          this.context.store.addReducer(reducerKey, initialState)
+        }
       }
       // Handles a callback for the consumer to cache and/or use the store.
       if (storeIsDefinedCallback) {

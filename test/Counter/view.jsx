@@ -19,7 +19,7 @@ class AddItem extends React.Component {
   }
 }
 
-const AddItemTest = connectWithStore({ uiComponent: AddItem, reduxOptions: { withRef: true } })
+const AddItemTest = connectWithStore({ uiComponent: AddItem, isDynamicReducer: false, reduxOptions: { withRef: true } })
 
 export default class SimpleReduxJavascript extends React.Component {
   componentDidMount () {

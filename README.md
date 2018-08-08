@@ -45,10 +45,9 @@ export default () =>
 `registerSimplerRedux(reduxStore[, rootReducersObject[, preloadedState[, options]]])` - Wrap this around your redux `createStore` call. It returns an enhanced reduxStore object with the redux store as its prototype.
 **Parameters**
 `reduxStore` - The redux store that is returned by createStore.
-`rootReducersObject` - If you want to use dynamic reducer loading, specify this object parameter. Note that this is not the combineReducers object but the actual reducers object. If this is a new project, it is recommended that you use dynamic reducer loading exclusively. Then specifify this as the empty object {}. With dynamic reducer loading, in your simpler-redux MVC mode code, specify `export const isDynamicReducer = true`. Then simpler-redux will automatically build your reducer and also load it when the component is constructed. Therefore, simpler-redux automatically supports react loadables without any code rewrites.
+`rootReducersObject` - If you want to use dynamic reducer loading, specify this object parameter. Note that this is not the combineReducers object but the actual reducers object. If this is a new project, it is recommended that you use dynamic reducer loading exclusively. Then specifify this as the empty object {} and simpler-redux will automatically build your reducer and also load it when the component is constructed. Therefore, simpler-redux automatically supports react loadables without any code rewrites.
 `preloadedState`- If you specify the `rootReducersObject` and have state to preload then you must specify it in this parameter.
-`options`
-- isDynamicReducer - Default to dynamic reducer loading for react components so that you do not have to specify isDynamicReducer in each component module.
+
 **Return Value**
 A simpler redux store. Add this as a store prop to the react-redux Provider element.
 
@@ -158,8 +157,9 @@ export const serviceFunctions = {
 -   `storeIsDefinedCallback` - Once the module's react component render is called for the first time, this callback will be invoked with the simpler redux store and the `stateAccessors` function as parameters. So it will be called before any possible user interactions.
 -   `noStoreParameterOnServiceFunctions` - Used in conjunction with `storeIsDefinedCallback`. This will cause simpler-redux to not add the store parameter when calling the service functions. This should not be used for shared modules.
 -   `reducerKey` - Used only in conjunction with `initialUIState`. When both of these are specified simpler-redux will build the mapStateToProps function directly from the keys in `initialUIState`.
--   `initialUIState` - Used only in conjunction with `reducerKey`. When both of these are specified simpler-redux will build the mapStateToProps function directly from the keys in `initialUIState`. This can be only used when your react component props only needs state from the declarative state definition `initialUIState`. Do not specify this and `selectors`.
-- `isDynamicReducer` - Supports dynamic loading of the component and the reducer. If the value is set to true then you must also specify the `rootReducersObject` parameter of your `registerSimplerRedux` call. Otherwise, simpler-redux will throw an exception indicating that you must do this.
+-   `initialUIState` - Used only in conjunction with `reducerKey`. When both of these are specified simpler-redux will build the mapStateToProps function directly from the keys in `initialUIState`. This can be only used when your react component props only needs state from the declarative state definition `initialUIState`. Do not specify this and `selectors`. If this is not specified and `initialState` is then `initialUIState` will default to `initialState`.
+-   `initialState` - Used only in conjunction with `reducerKey`. When both of these are specified simpler-redux will build the reducer that manages the state at `reducerKey`. If this is not specified and `initialUIState`is then `initialState` will default to `initialUIState`.
+-   `isDynamicReducer` - Supports dynamic loading of the component and the reducer. If you specify the `rootReducersObject` parameter of your `registerSimplerRedux` call then simpler-redux automatically assumes isDynamicReducer is true. Set this to false if you want to manually load your reducer in the global reducers object for a specific react component.
 - `selectorList` - An array of {selectors, keylist[list of selector keys]}. This allows combining selectors from different modules into one in order to build a mapStateToProps that includes key/values from other reducers keys including the component reducer selectors. If you specify keylist then you can include only a subset of the selectors indtead of all of them.
 Below is an example.
 ```javascript
@@ -170,6 +170,14 @@ export const selectorList = [
 ]
 ```
 - `serviceFunctionList` - An array of {serviceFunctions, keylist[list of serviceFunctions keys], withStore}. This allows combining serviceFunctions from different modules into one in order to build a mapDispatchToProps that includes key/values from other module serviceFunctions. The keylist allows you to select only a subset of the associated service functions. The withStore set to true will cause the store to be the first parameter for all the service functions when called with the UI parameters following after.
+Below is an example.
+```javascript
+import { serviceFunctions as counterServiceFunctions } from './Counter'
+
+export const serviceFunctionList = [
+  {counterServiceFunctions, ['increment']}
+]
+```
 
 **Return Value**
 None
