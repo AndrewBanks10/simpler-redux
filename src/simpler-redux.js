@@ -1,7 +1,7 @@
 /*
   Written by Andrew Banks. MIT license.
 */
-import { combineReducers } from 'redux'
+import { createStore as createReduxStore, combineReducers } from 'redux'
 import getReducerKeyProxy from './proxy'
 
 const simplerReduxReducerKey = '@@@@@srReducerKey'
@@ -9,10 +9,6 @@ const simplerReduxObjectToMergeKey = '@@@@@srObjectToMergeKey'
 
 const objectType = obj => Object.prototype.toString.call(obj).slice(8, -1)
 const isObjectType = obj => objectType(obj) === 'Object'
-
-let listeners = []
-let listenerId = 0
-let currentReducersObject
 
 const makeSetRState = reduxStore => {
   return (reducerKey, objToMerge, type) => {
@@ -37,7 +33,7 @@ const makeSetRState = reduxStore => {
       type
     })
 
-    listeners.forEach(listenerObj => {
+    reduxStore.listeners.forEach(listenerObj => {
       listenerObj.listener(reducerKey, objToMerge, type)
     })
   }
@@ -54,20 +50,22 @@ const makeGetRState = reduxStore => {
   }
 }
 
-const addListener = listener => {
-  if (process.env.NODE_ENV !== 'production') {
-    if (typeof listener !== 'function') {
-      throw new Error('addListener: The first argument must be a function.')
+const addListener = store => {
+  return listener => {
+    if (process.env.NODE_ENV !== 'production') {
+      if (typeof listener !== 'function') {
+        throw new Error('addListener: The first argument must be a function.')
+      }
     }
-  }
-  const id = listenerId++
-  listeners.push({ listener, id })
-  // Return a function that will remove this listener.
-  return () => {
-    let i = 0
-    for (; i < listeners.length && listeners[i].id !== id; ++i);
-    if (i < listeners.length) {
-      listeners.splice(i, 1)
+    const id = store.listenerId++
+    store.listeners.push({ listener, id })
+    // Return a function that will remove this listener.
+    return () => {
+      let i = 0
+      for (; i < store.listeners.length && store.listeners[i].id !== id; ++i);
+      if (i < store.listeners.length) {
+        store.listeners.splice(i, 1)
+      }
     }
   }
 }
@@ -96,6 +94,14 @@ export const generalReducer = (reducerKey, initialState) => {
 // Allows dynamic loading of simpler redux mvc components and their associated reducers.
 const buildAddReducer = (store, preloadedState) => {
   return (reducerKey, initialState) => {
+    if (process.env.NODE_ENV !== 'production') {
+      if (reducerKey === undefined) {
+        throw new Error('addReducer: The first argument (reducerKey) must be defined.')
+      }
+      if (initialState === undefined) {
+        throw new Error('addReducer: The second argument (initialState) must be defined.')
+      }
+    }
     // First load the initial state for the reducer.
     let state = { ...initialState }
     // Then load the preloadedState for the keys that exist in the initial state.
@@ -109,12 +115,22 @@ const buildAddReducer = (store, preloadedState) => {
         }
       })
     }
+    // One reducer with no typicals redux reducers.
+    if (store.isOneReducer) {
+      let currentState = store.getState()
+      // Do not use initialState on HMR.
+      if (currentState === undefined || currentState[reducerKey] === undefined) {
+        // Set the initialState state at the reducerKey.
+        store.setRState(reducerKey, state)
+      }
+      return
+    }
     // Generate the reducer for reducerKey.
     const reducer = generalReducer(reducerKey, state)
     // Add the reducer to the current list.
-    currentReducersObject = { ...currentReducersObject, [reducerKey]: reducer }
+    store.currentReducersObject = { ...store.currentReducersObject, [reducerKey]: reducer }
     // Replace the redux reducers with the new list.
-    store.replaceReducer(combineReducers(currentReducersObject))
+    store.replaceReducer(combineReducers(store.currentReducersObject))
   }
 }
 
@@ -133,23 +149,61 @@ export const registerSimplerRedux = (
   reduxStore,
   rootReducersObject,
   preloadedState = {},
-  options = {}
+  _options = {}
 ) => {
   let wrappedReduxStore = Object.create(reduxStore)
   wrappedReduxStore.setRState = makeSetRState(wrappedReduxStore)
   wrappedReduxStore.getRState = makeGetRState(wrappedReduxStore)
-  wrappedReduxStore.addListener = addListener
+  wrappedReduxStore.addListener = addListener(wrappedReduxStore)
+  wrappedReduxStore.listenerId = 0
+  wrappedReduxStore.listeners = []
   // Support for dynamic reducer loading.
   if (rootReducersObject !== undefined) {
-    currentReducersObject = { ...rootReducersObject }
+    wrappedReduxStore.isDynamicReducerLoading = () => true
+    wrappedReduxStore.currentReducersObject = { ...rootReducersObject }
     wrappedReduxStore.addReducer = buildAddReducer(wrappedReduxStore, { ...preloadedState })
   } else {
+    wrappedReduxStore.isDynamicReducerLoading = () => false
     if (process.env.NODE_ENV !== 'production') {
       wrappedReduxStore.addReducer = () => {
         throw new Error('To call addReducer, you must specify a rootReducersObject in the 2nd argument of registerSimplerRedux which can be just {}.')
       }
     }
   }
+  return wrappedReduxStore
+}
+
+//
+// One reducer is not compatible with existing redux code. Must be all simpler-redux.
+// This is the only reducer called for all state transitions.
+//
+const oneReducer = (state = {}, action) => {
+  const reducerKey = action[simplerReduxReducerKey]
+  const objToMerge = action[simplerReduxObjectToMergeKey]
+  // This is some redux thing, not from our setRState.
+  if (reducerKey === undefined) {
+    return state
+  }
+  // Must change the upper level redux state pointer or redux does not recognize a state change.
+  state = { ...state }
+  // Merge the incoming reducerKey state at the reducerKey
+  state[reducerKey] = {...state[reducerKey], ...objToMerge}
+  return state
+}
+
+// This cannot be used with redux reducers.
+export const createStore = (preloadedState, enhancer) => {
+  const reduxStore = createReduxStore(
+    oneReducer,
+    preloadedState,
+    enhancer
+  )
+  const wrappedReduxStore = registerSimplerRedux(
+    reduxStore,
+    {},
+    preloadedState
+  )
+  wrappedReduxStore.isOneReducer = true
   return wrappedReduxStore
 }
 
@@ -176,9 +230,6 @@ export const reducersPreloadedState = (reducersObject, preloadedState) =>
     }
     return obj
   }, {})
-
-export const isDynamicReducerLoading = () =>
-  currentReducersObject !== undefined
 
 const getState = (store, reducerKey) =>
   () => store.getRState(reducerKey)
@@ -223,7 +274,7 @@ export const stateAccessors = (store, reducerKey, initialState) => {
 // A redux store must be imported from your redux createStore module for the argument below.
 export const createModuleData = (store, reducerKey, initialState) => {
   if (process.env.NODE_ENV !== 'production') {
-    if (!isDynamicReducerLoading()) {
+    if (!store.isDynamicReducerLoading()) {
       throw new Error('To call createModuleData, you must specify a rootReducersObject in the 2nd argument of registerSimplerRedux which can be just {}.')
     }
     if (store === undefined) {

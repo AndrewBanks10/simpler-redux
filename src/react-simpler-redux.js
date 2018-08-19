@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import hoistStatics from 'hoist-non-react-statics'
-import { isDynamicReducerLoading, stateAccessors } from './simpler-redux'
+import { stateAccessors } from './simpler-redux'
 
 // React lifecycle events supported in the model code.
 const reactLifeCycleEvents = {
@@ -154,12 +154,20 @@ const connectWithStoreBase = (
     if (selectors !== undefined && initialUIState !== undefined) {
       throw new Error('connectWithStore: Cannot export both selectors and initialUIState.')
     }
+    let displayName = ''
+    if (uiComponent !== undefined) {
+      if (uiComponent.displayName !== undefined) {
+        displayName = uiComponent.displayName
+      } else {
+        displayName = uiComponent.name
+      }
+    }
     if (selectorList !== undefined) {
       selectorList.forEach(e => {
         if (e.keylist !== undefined) {
           e.keylist.forEach(key => {
             if (typeof e.selectors[key] !== 'function') {
-              throw new Error(`The selectors key ${key} is not in the selectors.`)
+              throw new Error(`connectWithStore ${displayName}: The selectors key ${key} is not in the selectors ${e.keylist.toString()}.`)
             }
           })
         }
@@ -170,7 +178,7 @@ const connectWithStoreBase = (
         if (e.keylist !== undefined) {
           e.keylist.forEach(key => {
             if (typeof e.serviceFunctions[key] !== 'function') {
-              throw new Error(`The serviceFunctions key ${key} is not in the serviceFunctions.`)
+              throw new Error(`connectWithStore ${displayName}: The serviceFunctions key ${key} is not in the serviceFunctionList ${e.keylist.toString()}.`)
             }
           })
         }
@@ -235,7 +243,7 @@ const connectWithStoreBase = (
     constructor (props, context) {
       super(props, context)
       // Handles the dynamic loading of the reducer.
-      if (isDynamicReducer !== false && isDynamicReducerLoading()) {
+      if (isDynamicReducer !== false && this.context.store.isDynamicReducerLoading()) {
         // This will build the reducer and add it to the reducers object.
         if (reducerKey !== undefined && initialState !== undefined) {
           this.context.store.addReducer(reducerKey, initialState)

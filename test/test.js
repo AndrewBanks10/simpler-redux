@@ -2,7 +2,7 @@
 //
 // Handle mocha testing.
 //
-import { createStore, combineReducers } from 'redux'
+import { createStore as createReduxStore, combineReducers } from 'redux'
 import { consoleTitle } from './util'
 const assert = require('assert')
 const isEqual = require('lodash/isEqual')
@@ -30,7 +30,8 @@ export const {
   setStateFunction,
   reducersPreloadedState,
   buildSelectorsFromUIState,
-  createModuleData
+  createModuleData,
+  createStore
 } = simplerRedux
 
 let reducersObject = {
@@ -59,7 +60,7 @@ for (let i = 0; i < numModules; ++i) {
 }
 
 const reduxStore = registerSimplerRedux(
-  createStore(
+  createReduxStore(
     combineReducers(reducersObject)
   ),
   reducersObject
@@ -133,5 +134,42 @@ describe(`Test createModuleData`, function () {
   it(`counter should be 2.`, function () {
     dataObj.reducerState.counter++
     assert(dataObj.reducerState.counter === 2)
+  })
+})
+
+describe('Test one reducer.', function () {
+  let reduxStoreOneReducer = createStore()
+  const testOneReducerKey = 'testOneReducerKey'
+
+  reduxStoreOneReducer.addReducer(testOneReducerKey, initialState)
+  it(`The testOneReducerKey is valid.`, function () {
+    assert(isEqual(reduxStoreOneReducer.getRState(testOneReducerKey), initialState))
+  })
+
+  let preloadedState = {}
+  preloadedState[testOneReducerKey] = {
+    boolVal: true,
+    intVal: 1,
+    stringVal: 'foo',
+    objVal: {key: 'bar'},
+    arrVal: [1]
+  }
+
+  let reduxStoreOneReducer2 = createStore(preloadedState)
+  reduxStoreOneReducer2.addReducer(testOneReducerKey, initialState)
+  it(`The pre-loaded state should be valid.`, function () {
+    assert(isEqual(reduxStoreOneReducer2.getRState(testOneReducerKey), { ...preloadedState[testOneReducerKey] }))
+  })
+
+  it(`Verify the separation of the two stores.`, function () {
+    for (let i = 0; i < numberStateTransitionsPerKey; ++i) {
+      reduxStoreOneReducer.setRState(testOneReducerKey, { intVal: i })
+      assert(reduxStoreOneReducer.getRState(testOneReducerKey)['intVal'] === i)
+      assert(reduxStoreOneReducer.getRState(testOneReducerKey)['intVal'] !==
+        reduxStoreOneReducer2.getRState(testOneReducerKey)['intVal']
+      )
+      reduxStoreOneReducer2.setRState(testOneReducerKey, { intVal: i })
+      assert(reduxStoreOneReducer2.getRState(testOneReducerKey)['intVal'] === i)
+    }
   })
 })

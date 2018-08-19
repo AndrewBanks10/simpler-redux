@@ -51,6 +51,16 @@ export default () =>
 **Return Value**
 A simpler redux store. Add this as a store prop to the react-redux Provider element.
 
+#### _createStore_
+**Description**
+`createStore([preloadedState[, enhancer]]])` - createStore calls redux createStore and supplies an interal reducer function, preloadedState and enhancers such as a redux logger. This solves the redux performance problem with calling every reducer on every state change. Only one reducer manages the entire redux state and does not require any case statements to merge state with the redux reducer key state(s). So, state changes only require one reducer call. However, this is incompatible with redux reducer code. Hence, only use this for simpler-redux only projects.
+**Parameters**
+`preloadedState`- redux preloadedState state.
+`enhancer` - redux enhancer.
+
+**Return Value**
+A simpler redux store. Add this as a store prop to the react-redux Provider element.
+
 #### _setRState_
 **Description**
 `simplerReduxStore.setRState(reducerKey, objectToMerge, [type])` - Merge the objectToMerge at the redux state object `reduxState[reducerKey]`.
