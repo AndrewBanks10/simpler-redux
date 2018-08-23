@@ -2,6 +2,9 @@ import reducersObject from './reducers'
 import { createStore, combineReducers } from 'redux'
 import { registerSimplerRedux, reducersPreloadedState } from './test'
 
+export let mstpCacheHits = 0
+export let mstpCalcs = 0
+
 // These below have been set to an initialization in the modules that would cause failure.
 // So, the preloadedState sets them to the correct initialization proving that
 // the preloadedState works properly.
@@ -12,11 +15,27 @@ const preloadedState = {
   'counter.10': { remove: false }
 }
 
-export default registerSimplerRedux(
+const mapStateToPropsCalc = obj => {
+  mstpCalcs++
+}
+
+const mapStateToPropsCache = obj => {
+  mstpCacheHits++
+}
+
+const options = {
+  mapStateToPropsCalc,
+  mapStateToPropsCache
+}
+
+const store = registerSimplerRedux(
   createStore(
     combineReducers(reducersObject),
     reducersPreloadedState(reducersObject, preloadedState) // Removes dynamically loaded reducer keys.
   ),
   reducersObject, // Allows dynamic reducer loading.
-  preloadedState // Tests preloaded state on the dynamic loaded reducers.
+  preloadedState, // Tests preloaded state on the dynamic loaded reducers.
+  options // Options
 )
+
+export default store

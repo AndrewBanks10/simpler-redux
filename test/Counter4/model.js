@@ -1,6 +1,5 @@
 import { consoleSuccess } from '../util'
-import { buildSelectorsFromUIState } from '../../test/test'
-export const reducerKey = 'counter.25'
+export const reducerKey = 'counter.35'
 
 const initialUIState = {
   counter: 10
@@ -8,17 +7,22 @@ const initialUIState = {
 
 export const initialState = initialUIState
 
-const selectors = buildSelectorsFromUIState(reducerKey, initialUIState)
-
-// Test selectorList
-export const selectorList = [
-  { reducerKey, selectors }
-]
-
 let reducerState
 export const storeIsDefinedCallback = (store, stateAccessors) => {
   ({ reducerState } = stateAccessors(store, reducerKey, initialState))
 }
+
+// This module tests a manually defined mapStateToProps.
+export const mapStateToProps = state => {
+  return ({
+    counter: state[reducerKey].counter
+  })
+}
+
+// This implements the MSTP caching for a manually defined mapStateToProps.
+export const mapStateToPropsReducerKeys = [
+  reducerKey
+]
 
 export const serviceFunctions = {
   increment: () => {
@@ -33,7 +37,3 @@ export const serviceFunctions = {
     reducerState.counter++
   }
 }
-
-export const serviceFunctionList = [
-  { serviceFunctions }
-]

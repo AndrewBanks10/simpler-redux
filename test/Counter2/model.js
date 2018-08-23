@@ -51,8 +51,10 @@ export const serviceFunctions = {
       throw new Error(`Expected reducerState.counter to be ${10 + val}.`)
     }
     consoleSuccess(`Verify reducerState.counter is ${10 + val}.`)
+  },
+  increment2: () => {
+    reducerState.counter++
   }
 }
 
 export const noStoreParameterOnServiceFunctions = true
-export const isDynamicReducer = true

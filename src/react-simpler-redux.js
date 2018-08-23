@@ -2,7 +2,8 @@ import React from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import hoistStatics from 'hoist-non-react-statics'
-import { stateAccessors } from './simpler-redux'
+import { stateAccessors, srOptions } from './simpler-redux'
+import { shallowSubObjectCompare, shallowCopy } from './util'
 
 // React lifecycle events supported in the model code.
 const reactLifeCycleEvents = {
@@ -60,19 +61,63 @@ export const allServiceFunctionsToPropsUsingServiceFunctionList = serviceFunctio
 //
 // Builds a mapStateToProps function that returns the entire reducer state.
 //
-export const allStateToProps = reducerKey =>
-  state => state[reducerKey]
+export const allStateToProps = reducerKey => {
+  return state => {
+    if (process.env.NODE_ENV !== 'production') {
+      srOptions.mapStateToPropsCache({
+        msg: `mapStateToProps fast calculation at ${reducerKey}, cache not needed.`,
+        reducerKey: reducerKey
+      })
+    }
+    return state[reducerKey]
+  }
+}
 
 //
 // Builds a mapStateToProps function based on a selectors object.
 //
-export const allStateToPropsUsingSelectors = selectors => {
+export const allStateToPropsUsingSelectors = (selectors, reducerKey) => {
   const keys = Object.keys(selectors)
-  return state =>
-    keys.reduce((obj, e) => {
-      obj[e] = selectors[e](state)
-      return obj
-    }, {})
+  if (!reducerKey) {
+    return (
+      state =>
+        keys.reduce((obj, e) => {
+          obj[e] = selectors[e](state)
+          return obj
+        }, {})
+    )
+  }
+  // Implements a caching mechanism below such that if the state at the reducerKey did not change
+  // then we return the previously calculated object.
+  let prevState
+  let lastresult
+  return state => {
+    if (prevState !== state[reducerKey]) {
+      if (process.env.NODE_ENV !== 'production') {
+        srOptions.mapStateToPropsCalc({
+          msg: `selector calculated ${reducerKey}`,
+          prevState,
+          nextState: state[reducerKey],
+          reducerKey
+        })
+      }
+      prevState = state[reducerKey]
+      lastresult = keys.reduce((obj, e) => {
+        obj[e] = selectors[e](state)
+        return obj
+      }, {})
+    } else {
+      if (process.env.NODE_ENV !== 'production') {
+        srOptions.mapStateToPropsCache({
+          msg: `selector cache ${reducerKey}`,
+          prevState,
+          nextState: state[reducerKey],
+          reducerKey
+        })
+      }
+    }
+    return lastresult
+  }
 }
 
 //
@@ -81,12 +126,61 @@ export const allStateToPropsUsingSelectors = selectors => {
 // The keylist allows selecting only a subset of a module's selectors.
 // If keylist is not specified then all selectors will be included.
 //
-export const allStateToPropsUsingSelectorList = selectorList => {
+export const allStateToPropsUsingSelectorList = (selectorList, componentName) => {
   selectorList = [...selectorList]
+  let useCache = true
+  let reducerKeys = []
+  for (let i = 0; i < selectorList.length; ++i) {
+    if (selectorList[i].keylist === undefined) {
+      selectorList[i].keylist = Object.keys(selectorList[i].selectors)
+    }
+    const reducerKey = selectorList[i].reducerKey
+    if (reducerKey) {
+      reducerKeys.push(reducerKey)
+    } else {
+      useCache = false
+    }
+  }
+  if (componentName === undefined) {
+    componentName = reducerKeys.toString()
+  }
+  if (useCache) {
+    let prevStates = {}
+    let lastResult
+    return state => {
+      if (!shallowSubObjectCompare(state, prevStates, reducerKeys)) {
+        if (process.env.NODE_ENV !== 'production') {
+          srOptions.mapStateToPropsCalc({
+            msg: `Selector List calculated ${componentName}.`,
+            nextState: shallowCopy(state, reducerKeys),
+            prevState: prevStates,
+            reducerKeys
+          })
+        }
+        prevStates = shallowCopy(state, reducerKeys)
+        lastResult = selectorList.reduce((obj, e) => {
+          e.keylist.forEach(key => {
+            obj[key] = e.selectors[key](state)
+          })
+          return obj
+        }, {})
+      } else {
+        if (process.env.NODE_ENV !== 'production') {
+          srOptions.mapStateToPropsCache({
+            msg: `Selector List cache ${componentName}.`,
+            nextState: shallowCopy(state, reducerKeys),
+            prevState: prevStates,
+            reducerKeys
+          })
+        }
+      }
+      return lastResult
+    }
+  }
+  reducerKeys = []
   return state =>
     selectorList.reduce((obj, e) => {
-      const keylist = e.keylist ? e.keylist : Object.keys(e.selectors)
-      keylist.forEach(key => {
+      e.keylist.forEach(key => {
         obj[key] = e.selectors[key](state)
       })
       return obj
@@ -94,15 +188,15 @@ export const allStateToPropsUsingSelectorList = selectorList => {
 }
 
 //
-// Builds a model selectors object from either initialUIState or .
+// Builds a model selectors object from either initialUIState or initialState.
 // initialUIState should only contain keys that you want in the
 // props of the react component.
 // This is not for specialized selectors for the UI that require conjunctions or
 // selectors from other modules, etc.
 // It is only for simple selectors of the nature state => state[reducerKey][stateKey]
 //
-export const buildSelectorsFromUIState = (reducerKey, initialUIState) => {
-  const keys = Object.keys(initialUIState)
+export const buildSelectorsFromUIState = (reducerKey, initialState) => {
+  const keys = Object.keys(initialState)
   return keys.reduce((obj, e) => {
     obj[e] = state => state[reducerKey][e]
     return obj
@@ -114,12 +208,66 @@ export const buildSelectorsFromUIState = (reducerKey, initialUIState) => {
 //
 const allStateToPropsUsingUIState = (reducerKey, initialUIState) => {
   const keys = Object.keys(initialUIState)
+  let prevState
+  let lastResult
   return state => {
-    const reducerState = state[reducerKey]
-    return keys.reduce((obj, e) => {
-      obj[e] = reducerState[e]
-      return obj
-    }, {})
+    if (state[reducerKey] !== prevState) {
+      if (process.env.NODE_ENV !== 'production') {
+        srOptions.mapStateToPropsCalc({
+          msg: `State props calculated at ${reducerKey}.`,
+          nextState: state[reducerKey],
+          prevState: prevState,
+          reducerKey
+        })
+      }
+      prevState = state[reducerKey]
+      lastResult = shallowCopy(state[reducerKey], keys)
+    } else {
+      if (process.env.NODE_ENV !== 'production') {
+        srOptions.mapStateToPropsCache({
+          msg: `State props cache at ${reducerKey}.`,
+          nextState: state[reducerKey],
+          prevState: prevState,
+          reducerKey
+        })
+      }
+    }
+    return lastResult
+  }
+}
+
+const buildCachedMapStateToProps = (mapStateToProps, mapStateToPropsReducerKeys, componentName) => {
+  if (!Array.isArray(mapStateToPropsReducerKeys)) {
+    mapStateToPropsReducerKeys = [mapStateToPropsReducerKeys]
+  }
+  if (componentName === undefined) {
+    componentName = mapStateToPropsReducerKeys.toString()
+  }
+  let prevStates = {}
+  let lastResult
+  return state => {
+    if (!shallowSubObjectCompare(state, prevStates, mapStateToPropsReducerKeys)) {
+      if (process.env.NODE_ENV !== 'production') {
+        srOptions.mapStateToPropsCalc({
+          msg: `mapStateToProps calculated ${componentName}.`,
+          nextState: shallowCopy(state, mapStateToPropsReducerKeys),
+          prevState: prevStates,
+          reducerKeys: mapStateToPropsReducerKeys
+        })
+      }
+      prevStates = shallowCopy(state, mapStateToPropsReducerKeys)
+      lastResult = mapStateToProps(state)
+    } else {
+      if (process.env.NODE_ENV !== 'production') {
+        srOptions.mapStateToPropsCache({
+          msg: `mapStateToProps cache ${componentName}.`,
+          nextState: shallowCopy(state, mapStateToPropsReducerKeys),
+          prevState: prevStates,
+          reducerKeys: mapStateToPropsReducerKeys
+        })
+      }
+    }
+    return lastResult
   }
 }
 
@@ -141,18 +289,20 @@ const connectWithStoreBase = (
     selectorList,
     initialUIState,
     noStoreParameterOnServiceFunctions,
-    mergeProps
+    mergeProps,
+    mapStateToPropsReducerKeys,
+    componentName
   } = options
 
   if (process.env.NODE_ENV !== 'production') {
     if (uiComponent === undefined) {
-      throw new Error('connectWithStore: options.uiComponent cannot be undefined.')
+      throw new Error(`connectWithStore: options.uiComponent cannot be undefined, reducerKey=${reducerKey}.`)
     }
     if (storeIsDefinedCallback && typeof storeIsDefinedCallback !== 'function') {
-      throw new Error(`connectWithStore: options.storeIsDefinedCallback must be a function.`)
+      throw new Error(`connectWithStore: options.storeIsDefinedCallback must be a function, reducerKey=${reducerKey}.`)
     }
     if (selectors !== undefined && initialUIState !== undefined) {
-      throw new Error('connectWithStore: Cannot export both selectors and initialUIState.')
+      throw new Error(`connectWithStore: Cannot export both selectors and initialUIState, reducerKey=${reducerKey}.`)
     }
     let displayName = ''
     if (uiComponent !== undefined) {
@@ -186,6 +336,10 @@ const connectWithStoreBase = (
     }
   }
 
+  if (componentName === undefined) {
+    componentName = reducerKey
+  }
+
   // Default initialState (reducer state) to initialUIState (component props state).
   if (initialState === undefined) {
     initialState = initialUIState
@@ -202,11 +356,15 @@ const connectWithStoreBase = (
   }
 
   // If mapStateToProps is defined by the consumer then keep it no matter what.
-  if (mapStateToProps === undefined) {
+  if (mapStateToProps !== undefined) {
+    if (mapStateToPropsReducerKeys !== undefined) {
+      mapStateToProps = buildCachedMapStateToProps(mapStateToProps, mapStateToPropsReducerKeys, componentName)
+    }
+  } else {
     if (selectorList !== undefined) {
-      mapStateToProps = allStateToPropsUsingSelectorList(selectorList)
+      mapStateToProps = allStateToPropsUsingSelectorList(selectorList, componentName)
     } else if (selectors !== undefined) {
-      mapStateToProps = allStateToPropsUsingSelectors(selectors)
+      mapStateToProps = allStateToPropsUsingSelectors(selectors, reducerKey)
     } else if (reducerKey !== undefined && initialUIState !== undefined) {
       // This is for efficiency. initialUIState and initialState are the same so
       // mapStateToProps simply returns the entire reducerKey state.

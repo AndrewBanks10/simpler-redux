@@ -2,6 +2,7 @@
   Written by Andrew Banks. MIT license.
 */
 import { createStore as createReduxStore, combineReducers } from 'redux'
+import { defaultOptions } from './util'
 import getReducerKeyProxy from './proxy'
 
 const simplerReduxReducerKey = '@@@@@srReducerKey'
@@ -9,6 +10,8 @@ const simplerReduxObjectToMergeKey = '@@@@@srObjectToMergeKey'
 
 const objectType = obj => Object.prototype.toString.call(obj).slice(8, -1)
 const isObjectType = obj => objectType(obj) === 'Object'
+
+export let srOptions
 
 const makeSetRState = reduxStore => {
   return (reducerKey, objToMerge, type) => {
@@ -41,15 +44,21 @@ const makeSetRState = reduxStore => {
 
 const makeGetRState = reduxStore => {
   return reducerKey => {
+    const state = reduxStore.getState()[reducerKey]
     if (process.env.NODE_ENV !== 'production') {
       if (typeof reducerKey !== 'string') {
         throw new Error('getRState: The first argument must be a string.')
       }
+      if (state === undefined) {
+        throw new Error(`The reducerKey state at ${reducerKey} is undefined. Did you forget to export an initialUIState or initialState from your model code?`)
+      }
     }
-    return reduxStore.getState()[reducerKey]
+    return state
   }
 }
 
+// These listeners do what redux subscribers should have done. It gives the reducerKey being modified
+// so that a listener can quickly decide if it is concerned about changes in that reducerKey.
 const addListener = store => {
   return listener => {
     if (process.env.NODE_ENV !== 'production') {
@@ -115,7 +124,7 @@ const buildAddReducer = (store, preloadedState) => {
         }
       })
     }
-    // One reducer with no typicals redux reducers.
+    // One reducer with no typical redux reducers.
     if (store.isOneReducer) {
       let currentState = store.getState()
       // Do not use initialState on HMR.
@@ -149,8 +158,9 @@ export const registerSimplerRedux = (
   reduxStore,
   rootReducersObject,
   preloadedState = {},
-  _options = {}
+  options = {}
 ) => {
+  srOptions = defaultOptions(options)
   let wrappedReduxStore = Object.create(reduxStore)
   wrappedReduxStore.setRState = makeSetRState(wrappedReduxStore)
   wrappedReduxStore.getRState = makeGetRState(wrappedReduxStore)
@@ -192,7 +202,7 @@ const oneReducer = (state = {}, action) => {
 }
 
 // This cannot be used with redux reducers.
-export const createStore = (preloadedState, enhancer) => {
+export const createStore = (preloadedState, enhancer, options = {}) => {
   const reduxStore = createReduxStore(
     oneReducer,
     preloadedState,
@@ -201,7 +211,8 @@ export const createStore = (preloadedState, enhancer) => {
   const wrappedReduxStore = registerSimplerRedux(
     reduxStore,
     {},
-    preloadedState
+    preloadedState,
+    options
   )
   wrappedReduxStore.isOneReducer = true
   return wrappedReduxStore

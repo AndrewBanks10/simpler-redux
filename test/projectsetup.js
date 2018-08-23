@@ -74,3 +74,9 @@ export const testCauseAndEffectWithTextField = (causeSelector, inputValue, expec
     nodeValue(causeSelector) === expectedValue
   )
 }
+
+export const testHtmlString = (effectSelector, expectedHtmlString, done) => {
+  handleReactAsyncStart(done, waitTime, () =>
+    nodeString(effectSelector) === expectedHtmlString
+  )
+}

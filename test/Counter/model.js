@@ -58,5 +58,3 @@ export const serviceFunctions = {
   increment3: () =>
     setState({ [counter3Key]: getState()[counter3Key] + 1 }, 'increment3')
 }
-
-export const isDynamicReducer = true

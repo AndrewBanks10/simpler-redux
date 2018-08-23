@@ -42,5 +42,3 @@ export const serviceFunctions = {
     }
   }
 }
-
-export const isDynamicReducer = true
