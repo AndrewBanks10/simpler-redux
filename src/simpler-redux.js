@@ -111,11 +111,12 @@ const buildAddReducer = (store, preloadedState) => {
         throw new Error('addReducer: The second argument (initialState) must be defined.')
       }
     }
-    // First load the initial state for the reducer.
+    // First load the initial state for the reducer. This is the developer defined initial state.
     let state = { ...initialState }
     // Then load the preloadedState for the keys that exist in the initial state.
     // Therefore, keys in preloadedState[reducerKey] that are not part of the current
-    // state shape in initialState are considered deprecated and are ignored.
+    // state shape in initialState are considered deprecated and are ignored. Otherwise,
+    // redux tosses a warning flag.
     const preloadedStateAtReducerKey = preloadedState[reducerKey]
     if (preloadedStateAtReducerKey !== undefined) {
       Object.keys(preloadedStateAtReducerKey).forEach(key => {
@@ -126,9 +127,9 @@ const buildAddReducer = (store, preloadedState) => {
     }
     // One reducer with no typical redux reducers.
     if (store.isOneReducer) {
-      let currentState = store.getState()
-      // Do not use initialState on HMR.
-      if (currentState === undefined || currentState[reducerKey] === undefined) {
+      let currentWholeState = store.getState()
+      // Do not set initialState on HMR.
+      if (currentWholeState === undefined || currentWholeState[reducerKey] === undefined) {
         // Set the initialState state at the reducerKey.
         store.setRState(reducerKey, state)
       }
